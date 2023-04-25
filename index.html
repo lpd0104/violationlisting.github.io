@@ -121,39 +121,8 @@
           <div class="col-lg-10 col-md-9 col-sm-8 content">
 
             <div id="dashboardScreen" class="d-none">
-              <div class="row justify-content-center">
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Card 1</h5>
-                      <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Card 2</h5>
-                      <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Card 3</h5>
-                      <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Card 4</h5>
-                      <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
-                  </div>
-                </div>
+              <div id="cardHolder" class="row justify-content-center">
+                
               </div>
             </div>
 
@@ -395,6 +364,40 @@
           $('#violationsScreen').addClass('d-none');
           $('#menuScreen').removeClass('d-none');
           $('#dashboardScreen').removeClass('d-none');
+
+          // Get Violation List
+          const violationList = collection(db, 'violationList/');
+          onSnapshot(violationList, (violationListQuerySnapshot) => {
+
+            violationListQuerySnapshot.forEach((vl) => {
+              // Get Plate No Details
+              const plateNoDetails = collection(db, 'plateNoDetails/');
+              var pvlCount = 0;
+              onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+                plateNoDetailsQuerySnapshot.forEach((pl) => {
+                  pl.data().violations.forEach((pvl) => {
+                    if (vl.id == pvl) {
+
+                      console.log(vl.data().type); 
+                      pvlCount++;
+                    }
+                  });
+                });
+                console.log(pvlCount);
+                $('#cardHolder').append(`<div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h2 class="card-title">`+ pvlCount +`</h2>
+                      <p class="card-text">`+ vl.data().type +`</p>
+                    </div>
+                  </div>
+                </div>`);
+
+                pvlCount = 0;
+              });
+            });
+                        
+          });          
         }
 
 
