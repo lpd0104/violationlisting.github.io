@@ -13,38 +13,47 @@
 
     <style>
       body {
-        background-color: #24292e;
-      }
-      
-      .card {
-        backdrop-filter: blur(12px) saturate(55%);
-        -webkit-backdrop-filter: blur(12px) saturate(55%);
-        background-color: rgba(17, 25, 40, 0.56);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.125);
+        background-image: url("bg_v1_wide.png");
       }
 
-      .table {
-        color: white;
-        backdrop-filter: blur(12px) saturate(55%);
-        -webkit-backdrop-filter: blur(12px) saturate(55%);
-        background-color: rgba(17, 25, 40, 0.56);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.125);  
+      #header {
+        height: 200px;
+        margin-left:-120px;
+        margin-right:-164px;
+        margin-top:-15px;
+        background-color: rgba(0, 123, 255, 0.6)!important;
       }
 
-      .buttons-csv {
-        background-color: #28a745;
-        border-color: #28a745;  
+      .grayscale {
+        filter: grayscale(95%);
+        opacity: 0.1;
       }
 
-      .page-item.active .page-link {
-        background-color: #28a745;
-        border-color: #28a745;
+      .img-container {
+        position: relative;
       }
 
-      .page-link, .page-link:hover {
-        color: #28a745;
+      .img-container img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .img-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .dashboard-card a {
+        color: black;
+        text-decoration: none;
+      }
+
+      .buttons-excel {
+        background-color: #007bff;
+        border-color: #007bff;  
       }
 
       .sidebar {
@@ -54,8 +63,6 @@
         height: 100%;
         width: 200px;
         padding: 15px;
-        background-color: #333;
-        color: #fff;
         z-index: 1; /* Add this line */
       }
 
@@ -73,56 +80,92 @@
       .sidebar ul li a {
         display: block;
         padding: 10px;
-        color: #fff;
+        color: #000;
         text-decoration: none;
       }
 
       .sidebar ul li a.active {
-        background-color: #555;
+        background-color: #007bff;
+        color: #fff;
       }
+
+      
 
       .content {
         margin-left: 200px;
-        padding: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 120px;
+        padding-right: 64px;
         z-index: 0; /* Add this line */
       }
     </style>
   </head>
-  <body class="text-white">
+  <body>
 
 
     <div id="loginScreen" class="d-none">
-      <div class="container mt-5">
-        <div class="row justify-content-center">
+      <div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
+        <div class="row w-100">
           
-          <div class="col-md-6">
+
+          <div class="col-md-1">
+          </div>
+
+          <div class="col-md-4 d-flex justify-content-center align-items-center img-container">
+            <img src="logo.png" class="grayscale my-4" alt="Background image">
+            <img class="img-overlay" src="title-logo-v2.png" alt="Overlay image">
+          </div>
+
+          <div class="col-md-1">
+          </div>
+
+          <div class="col-md-4">
             
-            <div class="card">
-              <div class="card-header d-flex">
-                <h4>Login</h4>
+            <div class="card bg-light shadow shadow-lg">
+              <div class="card-header d-flex align-items-center justify-content-center">
+                <div class="p-3 text-center">
+                  <h5>Welcome to Sta. Cruz</h5><h5>Traffic Management System</h5>
+                </div>
                 <div id="loading" class="mx-2 d-none justify-content-center align-items-center">
-                  <div class="spinner-border" role="status">
+                  <div class="spinner-border text-primary" role="status">
                   </div>
                 </div>
               </div>
 
-              <div class="card-body">
-                <form id="#login-form">
-                  <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="Enter email" required>
-                    <div class="invalid-feedback">Please enter a valid email address.</div>
+              <div class="card-body p-sm-5">
+                <form id="login-form">
+                  <label for="email" class="mt-sm-3">Email</label>
+                  <div class="input-group mb-sm-4">
+                    
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="fa fa-envelope"></i>
+                      </span>
+                    </div>
+                    <input type="email" class="form-control" id="email" placeholder="@gmail.com" required>
+
+                    <div class="invalid-feedback">Please enter a valid email address from gmail.com only.</div>
                   </div>
-                  <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+
+                  <label for="password">Password</label>
+                  <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="fa fa-lock"></i>
+                      </span>
+                    </div>
+                    <input type="password" class="form-control" id="password" placeholder="password" required>
                     <div class="invalid-feedback">Please enter a password.</div>
                   </div>
-                  <p class="text-center"><a href="?page=forgot" class="text-white">Forgot Password?</a></p>
-                  <button id="submit" type="submit" class="btn btn-success btn-block mb-3">Login</button>
+                  <p class="text-center p-sm-3"><a href="?page=forgot">Forgot Password?</a></p>
+                  <button id="submit" type="submit" class="btn btn-primary btn-block mb-sm-3">Login</button>
                 </form>
               </div>
             </div>
+          </div>
+
+          <div class="col-md-2">
           </div>
         </div>
       </div>
@@ -131,31 +174,34 @@
     <div id="menuScreen" class="d-none">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-lg-2 col-md-3 col-sm-4 bg-dark sidebar">
+          <div class="col-lg-2 p-0 col-md-3 col-sm-4 bg-light sidebar">
             <div class="sidebar-sticky">
               <ul class="nav flex-column">
                 <li class="nav-item">
-                  <a class="nav-link active" href="?page=dashboard">
+                  <img src="logo.png" class="img-fluid p-4">
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active p-3" href="?page=dashboard">
                     <i class="fas fa-list"></i> Dashboard
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="?page=transactions">
+                  <a class="nav-link p-3" href="?page=transactions">
                     <i class="fas fa-list"></i> Transactions
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="?page=users">
+                  <a class="nav-link p-3" href="?page=users">
                     <i class="fas fa-user"></i> Users
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="?page=violations">
+                  <a class="nav-link p-3" href="?page=violations">
                     <i class="fas fa-list"></i> Violations
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a id="logoutButton" class="nav-link" href="#">
+                  <a id="logoutButton" class="nav-link p-3" href="#">
                     <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
                 </li>
@@ -165,8 +211,13 @@
 
           <div class="col-lg-10 col-md-9 col-sm-8 content">
 
+
+            <div id="header" class="bg-primary mb-4 p-4 d-flex justify-content-center align-items-center">
+              <h1 class="text-white"></h1>
+            </div>
+
             <div id="loadingMain" class="d-flex justify-content-center">
-              <div class="spinner-border" role="status">
+              <div class="spinner-border text-white" role="status">
               </div>
             </div>
 
@@ -176,88 +227,82 @@
               </div>
             </div>
 
+            <h4 class="text-white mb-3" id="userViolationsSubtitle"></h4>
             <div id="userViolationsScreen" class="d-none">
-              <h2>Users with Violation</h2>
-              <h4 id="userViolationsSubtitle"></h4>
-              <br>
-              <table id="userViolationsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>Full Name</th>
-                    <th>License Plate</th>
-                    <th>Violation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
+              <div class="card bg-light p-4">
+                <table id="userViolationsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
+                  <thead>
+                    <tr>
+                      <th>Full Name</th>
+                      <th>License Plate</th>
+                      <th>Violation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div id="transactionsScreen" class="d-none">
-              <h2>Transactions</h2>
-              <br>
-              <table id="transactionsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>Ref #</th>
-                    <th>Full Name</th>
-                    <th>Address</th>
-                    <th>Birthdate</th>
-                    <th>License #</th>
-                    <th>Violations</th>
-                    <th>Total Fee</th>
-                    <th>Plate #</th>
-                    <th>Registered #</th>
-                    <th>Vehicle #</th>
-                    <th>Vehicle Type</th>
-                    <th>License Confiscated?</th>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
+              <div class="card bg-light p-4">
+                <table id="transactionsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px;">
+                  <thead>
+                    <tr>
+                      <th>Reference #</th>
+                      <th>Full Name</th>
+                      <th>Address</th>
+                      <th>Birthdate</th>
+                      <th>License #</th>
+                      <th>Violations</th>
+                      <th>Total Fee</th>
+                      <th>Plate #</th>
+                      <th>Registered #</th>
+                      <th>Vehicle #</th>
+                      <th>Vehicle Type</th>
+                      <th>License Confiscated?</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div id="usersScreen" class="d-none">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h2>Users</h2>
-                </div>
-                <div class="col-auto">
-                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal"><span><i class="fa fa-user"></i>&nbsp;&nbsp;Add User</span></button>
-                </div>
+              <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addUserModal"><span><i class="fa fa-user"></i>&nbsp;&nbsp;Add User</span></button>
+              
+              <div class="card bg-light p-4">
+                <table id="usersTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
               </div>
-              <br>
-              <table id="usersTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
+              
             </div>
 
             <div id="violationsScreen" class="d-none">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h2>Violations</h2>
-                </div>
+              <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addViolationModal"><span><i class="fa fa-list"></i>&nbsp;&nbsp;Add Violation</span></button>
+              <div class="card bg-light p-4">
+                <table id="violationsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
+                  <thead>
+                    <tr>
+                      <th>Tag</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
               </div>
-              <br>
-              <table id="violationsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>Tag</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
             </div>
 
           </div> 
@@ -267,12 +312,12 @@
       <!-- Add User Modal -->
       <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
-          <div class="modal-content bg-dark">
+          <div class="modal-content bg-light">
             <div class="modal-header">
               <div class="d-flex">
                 <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
                 <div id="loading2" class="mx-2 d-none justify-content-center align-items-center">
-                  <div class="spinner-border" role="status">
+                  <div class="spinner-border text-primary" role="status">
                   </div>
                 </div>
               </div>
@@ -307,6 +352,46 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               <button id="addUserBtn" type="submit" class="btn btn-success" form="addUserForm">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Violation Modal -->
+      <div class="modal fade" id="addViolationModal" tabindex="-1" role="dialog" aria-labelledby="addViolationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content bg-light">
+            <div class="modal-header">
+              <div class="d-flex">
+                <h5 class="modal-title" id="addViolationModalLabel">Add Violation</h5>
+                <div id="loading2" class="mx-2 d-none justify-content-center align-items-center">
+                  <div class="spinner-border text-primary" role="status">
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="addUserForm">
+                <div class="mb-3">
+                  <label for="tagAddViolation" class="form-label">Tag</label>
+                  <input type="text" class="form-control" id="tagAddViolation" placeHolder="Enter tag" required>
+                </div>
+                <div class="mb-3">
+                  <label for="typeAddViolation" class="form-label">Type</label>
+                  <input type="text" class="form-control" id="typeAddViolation" placeHolder="Enter type" required>
+                </div>
+                <div class="mb-3">
+                  <label for="amountAddViolation" class="form-label">Amount</label>
+                  <input type="number" class="form-control" id="amountAddViolation" placeHolder="Enter amount" required>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button id="addViolationBtn" type="submit" class="btn btn-success" form="addViolationForm">Save</button>
             </div>
           </div>
         </div>
@@ -449,7 +534,7 @@
           var password = passwordInput.val();
           
           // Check if email and password fields are valid
-          if (!emailInput[0].checkValidity()) {
+          if (!emailInput[0].checkValidity() || !email.includes('gmail.com')) {
             // If not valid, show error message
             emailInput.addClass('is-invalid');
           } else if (!passwordInput[0].checkValidity()) {
@@ -542,7 +627,14 @@
         $('.nav-link').each(function(){
           var linkPage = this.href.substring(this.href.lastIndexOf('/')+1);
 
-          document.title = page.charAt(0).toUpperCase() + page.slice(1);
+          var actualPage = '';
+          if (page.includes('users-with-violation')) {
+            actualPage = 'Users with Violation';
+          } else {
+            actualPage = page
+          }
+          document.title = actualPage.charAt(0).toUpperCase() + actualPage.slice(1);
+          $('#header h1').text(document.title);
           
           if (linkPage.includes(page)) {
             $(this).addClass('active');
@@ -598,11 +690,14 @@
               //console.log(pvlCount);
               if (pvlCount != 0) {
                 $('#cardHolder').append(`
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <a href="?page=users-with-violation&id=`+vl.id+`&title=`+vl.data().type+`" class="card square h-100">
-                    <div class="card-body text-center">
-                      <h2 class="h1 card-title text-success">`+ pvlCount +`</h2>
+                <div class="dashboard-card col-lg-2 col-md-4 col-sm-6 mb-4">
+                  <a href="?page=users-with-violation&id=`+vl.id+`&title=`+vl.data().type+`" class="card text-black square h-100">
+            
+                    <div class="card-header d-flex align-items-center" style="height:5rem">
                       <p class="card-text">`+ vl.data().type +`</p>
+                    </div>
+                    <div class="card-body d-flex align-items-center" style="height:10rem">
+                      <h2 class="h1 w-100 text-center">`+ pvlCount +`</h2>
                     </div>
                   </a>
                 </div>`);
@@ -744,13 +839,15 @@
               }
               
 
-              pdData.violations.forEach((vID) => {    
+              pdData.violations.forEach((vID, index) => {
+                console.log(pdData.amounts[index]);
+                var amount = pdData.amounts[index]; 
                 
                 transactionsListQuerySnapshot.forEach((vl) => {
 
                   if (vl.id == vID) {
-                    transactionsString = transactionsString + '*' + vl.data().type + '-' + vl.data().amount + '\n';
-                    transactionsAmount = transactionsAmount + parseFloat(vl.data().amount);
+                    transactionsString = transactionsString + '*' + vl.data().type + '-' + amount + '\n';
+                    transactionsAmount = transactionsAmount + parseFloat(amount);
                   }
                 });
                 
@@ -809,29 +906,34 @@
           // Show loading spinner
           $('#loading2').removeClass('d-none');
 
-          var adminCount = 0;
-          // Get admin users count
-          const users = collection(db, 'users/');
-          onSnapshot(users, (usersQuerySnapshot) => {
-            usersQuerySnapshot.forEach((u) => {
-              //console.log(u.id, " => ", u.data());
+          const userType = $('#typeAddUser').val();
 
-              var uData = u.data();
-              if (uData.type == 'admin') {
-                adminCount++;
+          if (userType === 'enforcer') {
+            signup();
+          } else {
+            var adminCount = 0;
+            // Get admin users count
+            const users = collection(db, 'users/');
+            onSnapshot(users, (usersQuerySnapshot) => {
+              usersQuerySnapshot.forEach((u) => {
+                //console.log(u.id, " => ", u.data());
+
+                var uData = u.data();
+                if (uData.type == 'admin') {
+                  adminCount++;
+                }
+              });
+
+              if (adminCount >= 2) {
+                alert('Admin account must not be greater than 2!');
+
+                // Hide loading spinner
+                $('#loading2').addClass('d-none');
+              } else {
+                signup();
               }
             });
-
-            if (adminCount >= 2) {
-              alert('Admin account must be not greater than 2!');
-
-              // Hide loading spinner
-              $('#loading2').addClass('d-none');
-            } else {
-              signup();
-            }
-          });
-
+          }
           
         });
 
@@ -932,7 +1034,7 @@
 
       function showViolationsPage(page) {
         setActivePage(page);
-        
+
         $('#loginScreen').addClass('d-none');
         $('#dashboardScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
@@ -953,6 +1055,16 @@
           ]
         });
 
+        // Show the modal when the plus button is clicked
+        $('#addViolationModal').on('show.bs.modal', function() {
+          // Clear the form values when the modal is shown
+          $('#addViolationForm').trigger('reset');
+        });
+
+        $('#addViolationModal').on('click', '#addViolationBtn', function(e) {
+          addViolation();
+        });
+
         onAuthStateChanged(auth, (user) => {
           if (user) {
             // User is signed in, show the violations
@@ -962,6 +1074,39 @@
             window.location.href = 'index.html';
           }
         });
+      }
+
+      function addViolation() {
+        // Get the input values from the modal
+        const tag = $('#tagAddViolation').val();
+        const type = $('#typeAddViolation').val();
+        const amount = $('#amountAddViolation').val();
+
+        var violations = collection(db, '/violationList');
+
+        // Add the user type to the Firestore database
+        setDoc(doc(violations, tag), {
+          id: tag,
+          type: type,
+          amount: amount
+        })
+        .then(() => {
+          // Violation added successfully
+          console.log('Violation added successfully');
+          $('#addViolationModal').modal('hide');
+
+          // Hide loading spinner
+          $('#loading2').addClass('d-none');
+        })
+        .catch((error) => {
+          // Error adding user
+          console.error('Error adding violation: ', error);
+
+          // Hide loading spinner
+          $('#loading2').addClass('d-none');
+        });
+
+          
       }
 
       function loadViolationsPage() {
@@ -979,7 +1124,7 @@
               vData.id,
               vData.type,
               '<span class="amount">' + vData.amount + '</span>' +
-              '<button class="btn btn-success btn-sm edit-amount ml-2"><span><i class="fa fa-edit"></i></span></button>',
+              '<button class="btn btn-primary btn-sm edit-amount ml-2"><span><i class="fa fa-edit"></i></span></button>',
               ''
             ]);
 
