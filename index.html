@@ -13,8 +13,7 @@
 
     <style>
       body {
-        background-image: url('bg.jpg');
-        background-position: center;
+        background-color: #24292e;
       }
       
       .card {
@@ -42,6 +41,10 @@
       .page-item.active .page-link {
         background-color: #28a745;
         border-color: #28a745;
+      }
+
+      .page-link, .page-link:hover {
+        color: #28a745;
       }
 
       .sidebar {
@@ -137,8 +140,8 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="?page=violations">
-                    <i class="fas fa-list"></i> Violations
+                  <a class="nav-link" href="?page=transactions">
+                    <i class="fas fa-list"></i> Transactions
                   </a>
                 </li>
                 <li class="nav-item">
@@ -147,7 +150,12 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="?page=logout">
+                  <a class="nav-link" href="?page=violations">
+                    <i class="fas fa-list"></i> Violations
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a id="logoutButton" class="nav-link" href="#">
                     <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
                 </li>
@@ -168,10 +176,27 @@
               </div>
             </div>
 
-            <div id="violationsScreen" class="d-none">
-              <h2>Violations</h2>
+            <div id="userViolationsScreen" class="d-none">
+              <h2>Users with Violation</h2>
+              <h4 id="userViolationsSubtitle"></h4>
               <br>
-              <table id="violationsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
+              <table id="userViolationsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
+                <thead>
+                  <tr>
+                    <th>Full Name</th>
+                    <th>License Plate</th>
+                    <th>Violation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="transactionsScreen" class="d-none">
+              <h2>Transactions</h2>
+              <br>
+              <table id="transactionsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
                 <thead>
                   <tr>
                     <th>Ref #</th>
@@ -199,7 +224,7 @@
                   <h2>Users</h2>
                 </div>
                 <div class="col-auto">
-                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">+</button>
+                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal"><span><i class="fa fa-user"></i>&nbsp;&nbsp;Add User</span></button>
                 </div>
               </div>
               <br>
@@ -208,6 +233,26 @@
                   <tr>
                     <th>Email</th>
                     <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="violationsScreen" class="d-none">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h2>Violations</h2>
+                </div>
+              </div>
+              <br>
+              <table id="violationsTable" class="table table-striped table-success table-bordered table-sm" style="width:100%">
+                <thead>
+                  <tr>
+                    <th>Tag</th>
+                    <th>Type</th>
+                    <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,6 +291,10 @@
                   <input type="password" class="form-control" id="passwordAddUser" placeHolder="Enter password" required>
                 </div>
                 <div class="mb-3">
+                  <label for="cpasswordAddUser" class="form-label">Confirm Password</label>
+                  <input type="password" class="form-control" id="cpasswordAddUser" placeHolder="Confirm password" required>
+                </div>
+                <div class="mb-3">
                   <label for="type" class="form-label">Type</label>
                   <select class="form-control" id="typeAddUser" required>
                     <option value="">Choose Type...</option>
@@ -265,7 +314,7 @@
     </div>
 
     <!-- Add Bootstrap JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     
@@ -283,7 +332,7 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
       import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
-      import { doc, getDoc, getFirestore, getDocs, collection, onSnapshot, setDoc} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
+      import { doc, getDoc, getFirestore, getDocs, collection, onSnapshot, setDoc, updateDoc} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
 
       // Your web app's Firebase configuration
       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -304,10 +353,64 @@
       const auth = getAuth();
       const db = getFirestore();
 
+
+      // Declare DataTables
+      var userViolationsDataTable;
+      var transactionsDataTable;
+      var usersDataTable;
+      var violationsDataTable;
+
       $(document).ready(function() {
 
         routePage();   
 
+        addActiveLink();
+
+        handleLogout();
+
+        handleLogin();
+        
+        handleLoginInput();
+
+        
+      });
+
+      function routePage() {
+        // Get the URL query parameters
+        var queryParams = new URLSearchParams(window.location.search);
+        
+        if (queryParams.has('page') && !queryParams.has('id')) {
+          var page = queryParams.get('page');
+          // DASHBOARD
+          if (page === 'dashboard') {
+            showDashboardPage(page);
+          }
+          // TRANSACTIONS
+          else if (page === 'transactions') {
+            showTransactionsPage(page);
+          }
+          // USERS
+          else if (page === 'users') {
+            showUsersPage(page);
+          } 
+          // VIOLATIONS
+          else if (page === 'violations') {
+            showViolationsPage(page);
+          } 
+        } else if (queryParams.has('page') && queryParams.has('id')) {
+          var page = queryParams.get('page');
+          var id = queryParams.get('id');
+          var title = queryParams.get('title');
+          // USER VIOLATIONS
+          if (page.includes('users-with-violation')) {
+            showUserViolationsPage(page, id, title);
+          } 
+        } else {
+          $('#loginScreen').removeClass('d-none');
+        }
+      }
+
+      function addActiveLink() {
         // Add click event to all nav links
         $('.nav-link').click(function(e) {
           // Remove active class from all nav links
@@ -317,8 +420,111 @@
         });
 
 
-        startLogin();
-        
+        $('#logoutButton').removeClass('active');
+      }
+
+      function handleLogout() {
+        $('#logoutButton').on('click', function(e) {
+          e.preventDefault();
+          if (confirm("Are you sure you want to log out?")) {
+            signOut(auth)
+            .then(() => {
+              window.location.href = 'index.html';
+            })
+            .catch((error) => {
+              // An error happened.
+            });
+          }
+        });
+      }
+
+      function handleLogin() {
+        // Add event listener for form submission
+        $('#submit').click(function(event) {
+          event.preventDefault();
+          // Get form fields
+          var emailInput = $('#email');
+          var passwordInput = $('#password');
+          var email = emailInput.val();
+          var password = passwordInput.val();
+          
+          // Check if email and password fields are valid
+          if (!emailInput[0].checkValidity()) {
+            // If not valid, show error message
+            emailInput.addClass('is-invalid');
+          } else if (!passwordInput[0].checkValidity()) {
+            // If password field is empty, show error message
+            passwordInput.addClass('is-invalid');
+            passwordInput.siblings('.invalid-feedback').text('Please enter a password.');
+          } else {
+
+            // Show loading spinner
+            $('#loading').removeClass('d-none');
+
+            // Sign in with email and password using Firebase Auth
+            signInWithEmailAndPassword(auth, email, password)
+              .then((userCredential) => {
+                // User authenticated successfully
+                checkUserLevel(userCredential.user.uid);
+              })
+              .catch((error) => {
+                // Handle Firebase Auth errors
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.error(errorCode + ': ' + errorMessage);
+
+                if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
+                  alert('Invalid credentials!');
+                } else if (errorCode === 'auth/too-many-requests') {
+                  alert('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
+                }
+
+                // Hide loading spinner
+                $('#loading').addClass('d-none');
+              });
+            }
+        });
+      }
+
+      function checkUserLevel(uid) {
+        const userRef = doc(db, "users", uid);
+
+        getDoc(userRef).then((doc) => {
+          if (doc.exists()) {
+            // Get user level from document data
+            var userLevel = doc.data().type;
+
+            if (userLevel === 'admin') {
+              // User is an admin
+              successfulLogin();
+            } else {
+              // Show error message
+              alert('You do not have permission to access this page.');
+            }
+          } else {
+            // User document does not exist
+            console.log('User document does not exist');
+          }
+          // Hide loading spinner
+          $('#loading').addClass('d-none');
+
+        }).catch((error) => {
+          // Handle errors
+          console.log(error);
+
+          // Hide loading spinner
+          $('#loading').addClass('d-none');
+        });
+      }
+
+      function successfulLogin() {
+        console.log('Successful logged in');
+
+        // Redirect to dashboard page
+        window.location.href = '?page=dashboard';
+      }
+
+      function handleLoginInput() {
         // Add event listener for field change
         $('#email, #password').on('input', function(event) {
           // Remove error message when user starts typing
@@ -326,410 +532,524 @@
             $(this).removeClass('is-invalid');
           }
         });
+      }
 
-        var violationsDataTable;
-        var usersDataTable;
+      function setActivePage(page) {
+        // Show Menu
+        $('#menuScreen').removeClass('d-none');
 
-        function routePage() {
-          // Get the URL query parameters
-          var queryParams = new URLSearchParams(window.location.search);
+        // Set active class to menu item based on current page URL
+        $('.nav-link').each(function(){
+          var linkPage = this.href.substring(this.href.lastIndexOf('/')+1);
+
+          document.title = page.charAt(0).toUpperCase() + page.slice(1);
           
-          // Check if the 'page' parameter is present and set to 'dashboard'
-          if (queryParams.has('page')) {
-            var page = queryParams.get('page');
-            // DASHBOARD
-            if (page === 'dashboard') {
-              showDashboardPage(page);
-            }
-            // VIOLATIONS
-            else if (page === 'violations') {
-              showViolationsPage(page);
-            }
-            // USERS
-            else if (page === 'users') {
-              showUsersPage(page);
-            } 
-            else if (page === 'logout') {
-              signOut(auth)
-              .then(() => {
-                window.location.href = 'index.html';
-              })
-              .catch((error) => {
-                // An error happened.
-              });
-            }
+          if (linkPage.includes(page)) {
+            $(this).addClass('active');
           } else {
-            $('#loginScreen').removeClass('d-none');
+            $(this).removeClass('active');
           }
-        }
+        });
+      }
 
-        function startLogin() {
-          // Add event listener for form submission
-          $('#submit').click(function(event) {
-            event.preventDefault();
-            // Get form fields
-            var emailInput = $('#email');
-            var passwordInput = $('#password');
-            var email = emailInput.val();
-            var password = passwordInput.val();
-            
-            // Check if email and password fields are valid
-            if (!emailInput[0].checkValidity()) {
-              // If not valid, show error message
-              emailInput.addClass('is-invalid');
-            } else if (!passwordInput[0].checkValidity()) {
-              // If password field is empty, show error message
-              passwordInput.addClass('is-invalid');
-              passwordInput.siblings('.invalid-feedback').text('Please enter a password.');
-            } else {
+      function showDashboardPage(page) {
+        setActivePage(page);
 
-              // Show loading spinner
-              $('#loading').removeClass('d-none');
+        $('#loginScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
 
-              // Sign in with email and password using Firebase Auth
-              signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                  // User authenticated successfully
-                  checkUserLevel(userCredential.user.uid);
-                })
-                .catch((error) => {
-                  // Handle Firebase Auth errors
-                  var errorCode = error.code;
-                  var errorMessage = error.message;
-                  console.error(errorCode + ': ' + errorMessage);
+        // Show current page
+        $('#dashboardScreen').removeClass('d-none');
+      
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the dashboard
+            loadDashboardPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
 
-                  if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
-                    alert('Invalid credentials!');
-                  } else if (errorCode === 'auth/too-many-requests') {
-                    alert('Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.');
-                  }
-
-                  // Hide loading spinner
-                  $('#loading').addClass('d-none');
-                });
-              }
-          });
-        }
-
-        // Function to check the user's level
-        function checkUserLevel(uid) {
-          const userRef = doc(db, "users", uid);
-
-          getDoc(userRef).then((doc) => {
-            if (doc.exists()) {
-              // Get user level from document data
-              var userLevel = doc.data().type;
-
-              if (userLevel === 'admin') {
-                // User is an admin
-                successfulLogin();
-              } else {
-                // Show error message
-                alert('You do not have permission to access this page.');
-              }
-            } else {
-              // User document does not exist
-              console.log('User document does not exist');
-            }
-            // Hide loading spinner
-            $('#loading').addClass('d-none');
-
-          }).catch((error) => {
-            // Handle errors
-            console.log(error);
-
-            // Hide loading spinner
-            $('#loading').addClass('d-none');
-          });
-        }
-
-        function successfulLogin() {
-          console.log('Successful logged in');
-
-          // Redirect to dashboard page
-          window.location.href = '?page=dashboard';
-        }
-
-        function setActivePage(page) {
-          // Show Menu
-          $('#menuScreen').removeClass('d-none');
-
-          // Set active class to menu item based on current page URL
-          $('.nav-link').each(function(){
-            var linkPage = this.href.substring(this.href.lastIndexOf('/')+1);
-
-            if (linkPage.includes(page)) {
-              $(this).addClass('active');
-            } else {
-              $(this).removeClass('active');
-            }
-          });
-        }
-
-        function showDashboardPage(page) {
-          setActivePage(page);
-          $('#loginScreen').addClass('d-none');
-          $('#violationsScreen').addClass('d-none');
-          $('#usersScreen').addClass('d-none');
-
-          // Show current page
-          $('#dashboardScreen').removeClass('d-none');
+      function loadDashboardPage() {
+        //console.log('Showing dashboard page');
         
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              // User is signed in, show the dashboard
-              loadDashboardPage();
-            } else {
-              // User is not signed in, redirect to login page
-              window.location.href = 'index.html';
-            }
-          });
-        }
+        // Get Violation List
+        const transactionsList = collection(db, 'violationList/');
+        onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
 
-        function loadDashboardPage() {
-          console.log('Showing dashboard page');
-          
-          // Get Violation List
-          const violationList = collection(db, 'violationList/');
-          onSnapshot(violationList, (violationListQuerySnapshot) => {
+          transactionsListQuerySnapshot.forEach((vl) => {
+            // Get Plate No Details
+            const plateNoDetails = collection(db, 'plateNoDetails/');
+            var pvlCount = 0;
+            onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+              plateNoDetailsQuerySnapshot.forEach((pl) => {
+                pl.data().violations.forEach((pvl) => {
+                  if (vl.id == pvl) {
 
-            violationListQuerySnapshot.forEach((vl) => {
-              // Get Plate No Details
-              const plateNoDetails = collection(db, 'plateNoDetails/');
-              var pvlCount = 0;
-              onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
-                plateNoDetailsQuerySnapshot.forEach((pl) => {
-                  pl.data().violations.forEach((pvl) => {
-                    if (vl.id == pvl) {
-
-                      console.log(vl.data().type); 
-                      pvlCount++;
-                    }
-                  });
+                    //console.log(vl.data().type); 
+                    pvlCount++;
+                  }
                 });
-                //console.log(pvlCount);
-                if (pvlCount != 0) {
-                  $('#cardHolder').append(`
-                  <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                    <div class="card h-100">
-                      <div class="card-body text-center">
-                        <h2 class="h1 card-title text-success">`+ pvlCount +`</h2>
-                        <p class="card-text">`+ vl.data().type +`</p>
-                      </div>
+              });
+              //console.log(pvlCount);
+              if (pvlCount != 0) {
+                $('#cardHolder').append(`
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                  <a href="?page=users-with-violation&id=`+vl.id+`&title=`+vl.data().type+`" class="card square h-100">
+                    <div class="card-body text-center">
+                      <h2 class="h1 card-title text-success">`+ pvlCount +`</h2>
+                      <p class="card-text">`+ vl.data().type +`</p>
                     </div>
-                  </div>`);
-                }
+                  </a>
+                </div>`);
+              }
+              $('#loadingMain').removeClass('d-flex');
+              $('#loadingMain').addClass('d-none');
+              pvlCount = 0;
+            });
+          });
+                      
+        });          
+      }
+
+      function showUserViolationsPage(page, id, title) {
+        setActivePage(page);
+        $('a[href="?page=dashboard"]').addClass('active');
+
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
+
+        $('#userViolationsSubtitle').text(title); 
+
+        // Show current page
+        $('#userViolationsScreen').removeClass('d-none');
+        
+        // Populate User Violations Table
+        userViolationsDataTable = $('#userViolationsTable').DataTable({
+          
+          dom: 'Bfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              text: 'Export to Excel',
+            }
+          ]
+        });
+
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the users
+            loadUserViolationsPage(id, title);
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      function loadUserViolationsPage(id, title) {
+        //console.log('Showing user violations page');
+        
+        // Get PlateNoDetails
+        const plateNoDetails = collection(db, 'plateNoDetails/');
+        onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+          userViolationsDataTable.clear(); // clear the table before adding new rows
+          plateNoDetailsQuerySnapshot.forEach((pd) => {
+            console.log(pd.id, " => ", pd.data());
+
+            var pdData = pd.data(); 
+            pdData.violations.forEach((pv) => {
+              if (pv == id) {                  
+                userViolationsDataTable.row.add([pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname, pdData.lnumber, title]);
+              }
+            });
+
+          });
+
+          userViolationsDataTable.draw();    
+
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
+        });
+      }
+
+      function showTransactionsPage(page) {
+        setActivePage(page);
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
+
+        // Show current page
+        $('#transactionsScreen').removeClass('d-none');
+        
+        // Populate Transactions Table
+        transactionsDataTable = $('#transactionsTable').DataTable({
+          
+          dom: 'Bfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              text: 'Export to Excel',
+            }
+          ]
+        });
+        transactionsDataTable.clear(); // clear the table before adding new rows
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the violations
+            loadTransactionsPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      function loadTransactionsPage() {
+        //console.log('Showing transactions page');
+        
+        // Get Plate No Details
+        const plateNoDetails = collection(db, 'plateNoDetails/');
+        onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+
+          const plateNoDetailsCount = plateNoDetailsQuerySnapshot.size;
+
+          let transactionsString = ''; 
+
+          let transactionsAmount = 0;
+          let i = 0;
+
+          plateNoDetailsQuerySnapshot.forEach((pd) => {
+            console.log(pd.id, " => ", pd.data());
+
+            // Get Violation List
+            const transactionsList = collection(db, 'violationList/');
+            onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
+              i++;
+
+              var pdData = pd.data();
+              var licenseConfString = 'No';
+              if (pdData.licconf == 1) {
+                licenseConfString = 'Yes';
+              }
+              
+
+              pdData.violations.forEach((vID) => {    
+                
+                transactionsListQuerySnapshot.forEach((vl) => {
+
+                  if (vl.id == vID) {
+                    transactionsString = transactionsString + '*' + vl.data().type + '-' + vl.data().amount + '\n';
+                    transactionsAmount = transactionsAmount + parseFloat(vl.data().amount);
+                  }
+                });
+                
+              });
+
+              transactionsDataTable.row.add([pd.id, pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname, pdData.address, pdData.bdate, pdData.lnumber, transactionsString, transactionsAmount.toFixed(2), pdData.no, pdData.rnumber, pdData.vnumber, pdData.vtype, licenseConfString]);
+              
+              if (i == plateNoDetailsCount) {
+                console.log(transactionsString);
+                transactionsDataTable.order([[ 0, "desc" ]]).draw();
+
                 $('#loadingMain').removeClass('d-flex');
                 $('#loadingMain').addClass('d-none');
-                pvlCount = 0;
-              });
+              }
+              transactionsString = '';
+              transactionsAmount = 0;
             });
-                        
-          });          
-        }
-
-        function showViolationsPage(page) {
-          setActivePage(page);
-          $('#loginScreen').addClass('d-none');
-          $('#dashboardScreen').addClass('d-none');
-          $('#usersScreen').addClass('d-none');
-
-          // Show current page
-          $('#violationsScreen').removeClass('d-none');
-          
-          // Populate Violations Table
-          violationsDataTable = $('#violationsTable').DataTable({
-            
-            dom: 'Bfrtip',
-            buttons: [
-                'csv'
-            ]
           });
-          violationsDataTable.clear(); // clear the table before adding new rows
 
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              // User is signed in, show the violations
-              loadViolationsPage();
-            } else {
-              // User is not signed in, redirect to login page
-              window.location.href = 'index.html';
+
+        });
+      }
+
+      function showUsersPage(page) {
+        setActivePage(page);
+
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
+
+        // Show current page
+        $('#usersScreen').removeClass('d-none');
+        
+        // Populate Users Table
+        usersDataTable = $('#usersTable').DataTable({
+          
+          dom: 'Bfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              text: 'Export to Excel',
             }
-          });
-        }
+          ]
+        });
 
-        function loadViolationsPage() {
-          console.log('Showing violation page');
-          
-          // Get Plate No Details
-          const plateNoDetails = collection(db, 'plateNoDetails/');
-          onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+        // Show the modal when the plus button is clicked
+        $('#addUserModal').on('show.bs.modal', function() {
+          // Clear the form values when the modal is shown
+          $('#addUserForm').trigger('reset');
+        });
 
-            const plateNoDetailsCount = plateNoDetailsQuerySnapshot.size;
+        $('#addUserModal').on('click', '#addUserBtn', function(e) {
+          e.preventDefault();
 
-            let violationString = ''; 
+          // Show loading spinner
+          $('#loading2').removeClass('d-none');
 
-            let violationAmount = 0;
-            let i = 0;
-
-            plateNoDetailsQuerySnapshot.forEach((pd) => {
-              console.log(pd.id, " => ", pd.data());
-
-              // Get Violation List
-              const violationList = collection(db, 'violationList/');
-              onSnapshot(violationList, (violationListQuerySnapshot) => {
-                i++;
-
-                var pdData = pd.data();
-                var licenseConfString = 'No';
-                if (pdData.licconf == 1) {
-                  licenseConfString = 'Yes';
-                }
-                
-
-                pdData.violations.forEach((vID) => {    
-                  
-                  violationListQuerySnapshot.forEach((vl) => {
-
-                    if (vl.id == vID) {
-                      violationString = violationString + '*' + vl.data().type + '-' + vl.data().amount + '\n';
-                      violationAmount = violationAmount + parseFloat(vl.data().amount);
-                    }
-                  });
-                  
-                });
-
-                violationsDataTable.row.add([pd.id, pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname, pdData.address, pdData.bdate, pdData.lnumber, violationString, violationAmount.toFixed(2), pdData.no, pdData.rnumber, pdData.vnumber, pdData.vtype, licenseConfString]);
-                
-                if (i == plateNoDetailsCount) {
-                  console.log(violationString);
-                  violationsDataTable.order([[ 0, "desc" ]]).draw();
-
-                  $('#loadingMain').removeClass('d-flex');
-                  $('#loadingMain').addClass('d-none');
-                }
-                violationString = '';
-                violationAmount = 0;
-              });
-            });
-
-
-          });
-        }
-
-        function showUsersPage(page) {
-          setActivePage(page);
-          $('#loginScreen').addClass('d-none');
-          $('#dashboardScreen').addClass('d-none');
-          $('#violationsScreen').addClass('d-none');
-
-          // Show current page
-          $('#usersScreen').removeClass('d-none');
-          
-          // Populate Users Table
-          usersDataTable = $('#usersTable').DataTable({
-            
-            dom: 'Bfrtip',
-            buttons: [
-                'csv'
-            ]
-          });
-
-          // Show the modal when the plus button is clicked
-          $('#addUserModal').on('show.bs.modal', function() {
-            // Clear the form values when the modal is shown
-            $('#addUserForm').trigger('reset');
-          });
-
-          $('#addUserModal').on('click', '#addUserBtn', function(e) {
-            e.preventDefault();
-
-            // Show loading spinner
-            $('#loading2').removeClass('d-none');
-
-            // Get the input values from the modal
-            const email = $('#emailAddUser').val();
-            const password = $('#passwordAddUser').val();
-            const userType = $('#typeAddUser').val();
-
-            // Call the createUserWithEmailAndPassword method
-            createUserWithEmailAndPassword(auth, email, password)
-              .then((userCredential) => {
-
-                // Signed up user
-                const user = userCredential.user;
-
-                var users = collection(db, '/users');
-
-                // Add the user type to the Firestore database
-                setDoc(doc(users, user.uid), {
-                  email: email,
-                  type: userType,
-                  id: user.uid
-                })
-                .then(() => {
-                  // User added successfully
-                  console.log('User added successfully');
-                  $('#addUserModal').modal('hide');
-
-                  // Hide loading spinner
-                  $('#loading2').addClass('d-none');
-                })
-                .catch((error) => {
-                  // Error adding user
-                  console.error('Error adding user: ', error);
-
-                  // Hide loading spinner
-                  $('#loading2').addClass('d-none');
-                });
-
-              })
-              .catch((error) => {
-                var errorCode = error.code;
-                var errorMessage = error.message;
-                // Error signing up user
-                console.error(errorCode + ': ' + errorMessage);
-                if (errorCode === 'auth/email-already-in-use') {
-                  alert('Email already taken!');
-                }
-                // Hide loading spinner
-                $('#loading2').addClass('d-none');
-              });
-          });
-
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              // User is signed in, show the users
-              loadUsersPage();
-            } else {
-              // User is not signed in, redirect to login page
-              window.location.href = 'index.html';
-            }
-          });
-        }
-
-        function loadUsersPage() {
-          console.log('Showing user page');
-          
-          // Get User Details
+          var adminCount = 0;
+          // Get admin users count
           const users = collection(db, 'users/');
           onSnapshot(users, (usersQuerySnapshot) => {
-            usersDataTable.clear(); // clear the table before adding new rows
             usersQuerySnapshot.forEach((u) => {
-              console.log(u.id, " => ", u.data());
+              //console.log(u.id, " => ", u.data());
 
               var uData = u.data();
-              usersDataTable.row.add([uData.email, uData.type]);
-
+              if (uData.type == 'admin') {
+                adminCount++;
+              }
             });
 
-            usersDataTable.draw();    
+            if (adminCount >= 2) {
+              alert('Admin account must be not greater than 2!');
 
-            $('#loadingMain').removeClass('d-flex');
-            $('#loadingMain').addClass('d-none');
+              // Hide loading spinner
+              $('#loading2').addClass('d-none');
+            } else {
+              signup();
+            }
           });
+
+          
+        });
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the users
+            loadUsersPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      function signup() {
+        // Get the input values from the modal
+        const email = $('#emailAddUser').val();
+        const password = $('#passwordAddUser').val();
+        const cpassword = $('#cpasswordAddUser').val();
+        const userType = $('#typeAddUser').val();
+
+        if (cpassword != password) {
+          alert('Password and Confirm Password must be matched!');
+
+          // Hide loading spinner
+          $('#loading2').addClass('d-none');
+          return;
         }
-      });
+
+        // Call the createUserWithEmailAndPassword method
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+
+            // Signed up user
+            const user = userCredential.user;
+
+            var users = collection(db, '/users');
+
+            // Add the user type to the Firestore database
+            setDoc(doc(users, user.uid), {
+              email: email,
+              type: userType,
+              id: user.uid
+            })
+            .then(() => {
+              // User added successfully
+              console.log('User added successfully');
+              $('#addUserModal').modal('hide');
+
+              // Hide loading spinner
+              $('#loading2').addClass('d-none');
+            })
+            .catch((error) => {
+              // Error adding user
+              console.error('Error adding user: ', error);
+
+              // Hide loading spinner
+              $('#loading2').addClass('d-none');
+            });
+
+          })
+          .catch((error) => {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            // Error signing up user
+            console.error(errorCode + ': ' + errorMessage);
+            if (errorCode === 'auth/email-already-in-use') {
+              alert('Email already taken!');
+            } else if (errorCode === 'auth/weak-password') {
+              alert('Password should be at least 6 characters!');
+            }
+            // Hide loading spinner
+            $('#loading2').addClass('d-none');
+          });
+      }
+
+      function loadUsersPage() {
+        //console.log('Showing user page');
+        
+        // Get User Details
+        const users = collection(db, 'users/');
+        onSnapshot(users, (usersQuerySnapshot) => {
+          usersDataTable.clear(); // clear the table before adding new rows
+          usersQuerySnapshot.forEach((u) => {
+            //console.log(u.id, " => ", u.data());
+
+            var uData = u.data();
+            usersDataTable.row.add([uData.email, uData.type]);
+
+          });
+
+          usersDataTable.draw();    
+
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
+        });
+      }
+
+      function showViolationsPage(page) {
+        setActivePage(page);
+        
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+
+        // Show current page
+        $('#violationsScreen').removeClass('d-none');
+        
+        // Populate Users Table
+        violationsDataTable = $('#violationsTable').DataTable({
+          
+          dom: 'Bfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              text: 'Export to Excel',
+            }
+          ]
+        });
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the violations
+            loadViolationsPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      function loadViolationsPage() {
+        //console.log('Showing violation page');
+        
+        // Get User Details
+        const violations = collection(db, 'violationList/');
+        onSnapshot(violations, (violationsQuerySnapshot) => {
+          violationsDataTable.clear(); // clear the table before adding new rows
+          violationsQuerySnapshot.forEach((v) => {
+            //console.log(v.id, " => ", v.data());
+
+            var vData = v.data();
+            violationsDataTable.row.add([
+              vData.id,
+              vData.type,
+              '<span class="amount">' + vData.amount + '</span>' +
+              '<button class="btn btn-success btn-sm edit-amount ml-2"><span><i class="fa fa-edit"></i></span></button>',
+              ''
+            ]);
+
+          });
+
+          violationsDataTable.draw();
+
+          // Handle edit button clicks
+          $('#violationsTable tbody').on('click', '.edit-amount', function() {
+            const $row = $(this).closest('tr');
+            const $amount = $row.find('.amount');
+            const $editButton = $(this);
+
+            console.log($amount.text());
+
+            // Replace the amount with a textbox and save/cancel buttons
+            $amount.html('<input type="number" class="form-control" value="' + $amount.text() + '">' +
+              '<button class="btn btn-success btn-sm save-amount" type="button" value="Save"><span><i class="fa fa-check"></i></span></button>' +
+              '<button class="btn btn-danger btn-sm cancel-amount" type="button" value="Cancel"><span><i class="fa fa-times"></i></span></button>');
+
+            // Hide the edit button
+            $editButton.hide();
+          });
+
+          // Handle cancel button clicks
+          $('#violationsTable tbody').on('click', '.cancel-amount', function() {
+            const $row = $(this).closest('tr');
+            const $amount = $row.find('.amount');
+            const $editButton = $row.find('.edit-amount');
+
+            // Replace the textbox and save/cancel buttons with the original amount and edit button
+            $amount.html($amount.data('original-amount'));
+            $editButton.show();
+          });
+
+          // Handle save button clicks
+          $('#violationsTable tbody').on('click', '.save-amount', function() {
+            const $row = $(this).closest('tr');
+            const $amount = $row.find('.amount');
+            const $editButton = $row.find('.edit-amount');
+            const newAmount = $amount.find('input').val();
+
+            // Store the original HTML of the amount element
+            const originalHtml = $amount.data('original-amount');
+
+            // Update the amount in Firebase
+            const violationRef = doc(db, 'violationList', $row.find('td:eq(0)').text());
+            updateDoc(violationRef, { amount: newAmount }).then(() => {
+              // Update the amount in the table
+              $amount.text(newAmount);
+
+              // Show the edit button again
+              $editButton.show();
+
+              // Store the new HTML of the amount element
+              $amount.data('original-amount', originalHtml.replace('{AMOUNT}', newAmount));
+            }).catch((error) => {
+              console.error('Error updating amount:', error);
+            });
+          });
+
+          // Store the original amount HTML in a data attribute so it can be restored later
+          $('#violationsTable tbody').find('.amount').each(function() {
+            $(this).data('original-amount', $(this).html());
+          });
+
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
+        });
+      }        
     </script>
   </body>
 </html>
