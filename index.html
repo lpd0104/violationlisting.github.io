@@ -205,6 +205,11 @@
                   </a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link p-3" href="?page=generate-reports">
+                    <i class="fas fa-list-alt"></i> Generate Report
+                  </a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link p-3" href="?page=users">
                     <i class="fas fa-user"></i> Users
                   </a>
@@ -212,6 +217,11 @@
                 <li class="nav-item">
                   <a class="nav-link p-3" href="?page=violations">
                     <i class="fas fa-list"></i> Violations
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link p-3" href="?page=change-password">
+                    <i class="fas fa-lock"></i> Change Password
                   </a>
                 </li>
                 <li class="nav-item">
@@ -286,6 +296,32 @@
                 </div>
               </div>
 
+              <div id="reportsScreen" class="d-none">
+                <div class="card bg-light p-4 table-responsive">
+                  <table id="reportsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px;">
+                    <thead>
+                      <tr>
+                        <th>Reference #</th>
+                        <th>Full Name</th>
+                        <th>Address</th>
+                        <th>Birthdate</th>
+                        <th>License #</th>
+                        <th>Plate #</th>
+                        <th>Registered #</th>
+                        <th>Vehicle #</th>
+                        <th>Vehicle Type</th>
+                        <th>License Confiscated?</th>
+                        <th>Violations</th>
+                        <th>Total Fee</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div id="usersScreen" class="d-none">
                 <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addUserModal"><span><i class="fa fa-user"></i>&nbsp;&nbsp;Add User</span></button>
                 
@@ -320,6 +356,27 @@
                   </table>
                 </div>
               </div>
+
+              <div id="changePasswordScreen" class="d-none">
+                <div class="d-flex justify-content-center">
+                  <div class="card bg-light p-4 w-50">
+                    <div class="card-body ">
+                      <form>
+                        <div class="form-group">
+                          <label class="form-label" for="newPassword">New Password</label>
+                          <input class="form-control  " type="password" name="newPassword" id="newPassword" placeholder="Enter new password" required>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label" for="confirmPassword">Confirm Password</label>
+                          <input class="form-control  " type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm password" required>
+                        </div>
+                        <button id="saveNewPassword" class="btn btn-primary btn-block mt-4" type="button">Save</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
             
 
@@ -508,7 +565,7 @@
       // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
-      import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+      import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, updatePassword  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
       import { doc, getDoc, getFirestore, getDocs, collection, onSnapshot, setDoc, updateDoc} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
 
       // Your web app's Firebase configuration
@@ -534,6 +591,7 @@
       // Declare DataTables
       var userViolationsDataTable;
       var transactionsDataTable;
+      var reportsDataTable;
       var usersDataTable;
       var violationsDataTable;
 
@@ -566,6 +624,10 @@
           else if (page === 'transactions') {
             showTransactionsPage(page);
           }
+          // REPORTS
+          else if (page === 'generate-reports') {
+            showReportsPage(page);
+          }
           // USERS
           else if (page === 'users') {
             showUsersPage(page);
@@ -573,6 +635,10 @@
           // VIOLATIONS
           else if (page === 'violations') {
             showViolationsPage(page);
+          } 
+          // CHANGE PASSWORD
+          else if (page === 'change-password') {
+            showChangePasswordPage(page);
           } 
         } else if (queryParams.has('page') && queryParams.has('id')) {
           var page = queryParams.get('page');
@@ -722,6 +788,10 @@
           var actualPage = '';
           if (page.includes('users-with-violation')) {
             actualPage = 'Users with Violation';
+          } else if (page.includes('generate-reports')) {
+            actualPage = 'Generate Reports';
+          } else if (page.includes('change-password')) {
+            actualPage = 'Change Password';
           } else {
             actualPage = page
           }
@@ -741,8 +811,10 @@
 
         $('#loginScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
+        $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
 
         // Show current page
         $('#dashboardScreen').removeClass('d-none');
@@ -810,8 +882,10 @@
         $('#loginScreen').addClass('d-none');
         $('#dashboardScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
+        $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
 
         $('#userViolationsSubtitle').text(title); 
 
@@ -849,6 +923,7 @@
         const plateNoDetails = collection(db, 'plateNoDetails/');
         onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
           userViolationsDataTable.clear(); // clear the table before adding new rows
+
           plateNoDetailsQuerySnapshot.forEach((pd) => {
             console.log(pd.id, " => ", pd.data());
 
@@ -872,8 +947,10 @@
         setActivePage(page);
         $('#loginScreen').addClass('d-none');
         $('#dashboardScreen').addClass('d-none');
+        $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
 
         // Show current page
         $('#transactionsScreen').removeClass('d-none');
@@ -889,7 +966,6 @@
             }
           ]
         });
-        transactionsDataTable.clear(); // clear the table before adding new rows
 
         onAuthStateChanged(auth, (user) => {
           if (user) {
@@ -1030,6 +1106,172 @@
               console.error('Error updating amount:', error);
             });
           });
+        });
+      }
+
+      function showReportsPage(page) {
+        setActivePage(page);
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
+
+        // Show current page
+        $('#reportsScreen').removeClass('d-none');
+        
+        // Populate Reports Table
+        reportsDataTable = $('#reportsTable').DataTable({
+          
+          dom: 'Bfrtip',
+          buttons: [
+            {
+              extend: 'excel',
+              text: 'Export to Excel',
+            }
+          ]
+        });
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show reports
+            loadReportsPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      function loadReportsPage() {
+        //console.log('Showing transactions page');
+        
+        // Get Plate No Details
+        const plateNoDetails = collection(db, 'plateNoDetails/');
+        onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+
+          const plateNoDetailsCount = plateNoDetailsQuerySnapshot.size;
+
+          let transactionsString = ''; 
+
+          let transactionsAmount = 0;
+          let i = 0;
+
+          plateNoDetailsQuerySnapshot.forEach((pd) => {
+            //console.log(pd.id, " => ", pd.data());
+            reportsDataTable.clear();
+
+            // Get Violation List
+            const transactionsList = collection(db, 'violationList/');
+            onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
+              i++;
+
+              var pdData = pd.data();
+              var licenseConfString = 'No';
+              if (pdData.licconf == 1) {
+                licenseConfString = 'Yes';
+              }
+              
+
+              pdData.violations.forEach((vID, index) => {
+                //console.log(pdData.amounts[index]);
+                var amount = pdData.amounts[index]; 
+                
+                transactionsListQuerySnapshot.forEach((vl) => {
+
+                  if (vl.id == vID) {
+                    transactionsString = transactionsString + '*' + vl.data().type + '-' + amount + '\n';
+                    transactionsAmount = transactionsAmount + parseFloat(amount);
+                  }
+                });
+                
+              });
+
+              
+
+              var button = '<button class="btn btn-success btn-sm settle-button" data-reference="' + pd.id + '">Settle</button>';
+              if (pdData.paid == true) {
+                button = '<button class="btn btn-dark btn-sm " disabled>Paid</button>'
+              }
+
+              reportsDataTable.row.add([
+                pd.id,
+                pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
+                pdData.address,
+                pdData.bdate,
+                pdData.lnumber,
+                pdData.no,
+                pdData.rnumber,
+                pdData.vnumber,
+                pdData.vtype,
+                licenseConfString,
+                transactionsString,
+                transactionsAmount.toFixed(2),
+                button
+              ]);
+              
+              if (i == plateNoDetailsCount) {
+                //console.log(transactionsString);
+                reportsDataTable.order([[ 0, "desc" ]]).draw();
+
+                $('#loadingMain').removeClass('d-flex');
+                $('#loadingMain').addClass('d-none');
+              }
+              transactionsString = '';
+              transactionsAmount = 0;
+            });
+          });
+
+          $('#transactionsTable').on('click', '.settle-button', function() {
+            const reference = $(this).data('reference');
+            const button = $(this);
+
+            // Update the amount in Firebase
+            const transactionRef = doc(db, 'plateNoDetails', reference.toString());
+
+            updateDoc(transactionRef, { paid: true }).then(() => {
+              // Update the button text and disable the button
+              button.text('Paid');
+              button.removeClass('btn-success');
+              button.addClass('btn-dark');
+              button.prop('disabled', true);
+              console.log("Document successfully updated!");
+
+              // Get the receipt details from Firebase
+              getDoc(transactionRef).then((doc) => {
+                const receiptDetails = doc.data();
+
+                var today = new Date();
+                var day = today.getDate();
+                var month = today.getMonth() + 1; // month is zero-based, so we add 1
+                var year = today.getFullYear();
+                var currentDate = month + '/' + day + '/' + year;
+                console.log(currentDate); // output: "5/3/2023"
+
+                // Display the receipt details in the modal
+                $('#receiptDate').text(currentDate);
+                $('#receiptPayor').text(receiptDetails.fname + ' ' + receiptDetails.mname[0] + '. ' + receiptDetails.lname)
+                $('#receiptID').text(receiptDetails.id);
+                var total = 0.00;
+                $('#receiptAmountDetails tbody').empty();
+
+                receiptDetails.violations.forEach((vl, index) => {
+                  $('#receiptAmountDetails tbody').append('<tr><td>' + vl + '</td><td>' + vl + '</td><td>' + receiptDetails.amounts[index] + '</td></tr>');
+                  total = total + parseFloat(receiptDetails.amounts[index]);
+                });
+                $('#receiptAmountDetails tbody').append('<tr><td>TOTAL</td><td></td><td>'+ total.toFixed(2) +'</td></tr>');
+
+                //$('#receiptAmountDetails').text();
+
+                $('#receiptModal').modal('show');
+              }).catch((error) => {
+                console.error('Error getting receipt details:', error);
+              });
+            }).catch((error) => {
+              console.error('Error updating amount:', error);
+            });
+          });
 
           
 
@@ -1043,7 +1285,9 @@
         $('#loginScreen').addClass('d-none');
         $('#dashboardScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
+        $('#reportsScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
 
         // Show current page
         $('#usersScreen').removeClass('d-none');
@@ -1183,6 +1427,7 @@
         const users = collection(db, 'users/');
         onSnapshot(users, (usersQuerySnapshot) => {
           usersDataTable.clear(); // clear the table before adding new rows
+
           usersQuerySnapshot.forEach((u) => {
             //console.log(u.id, " => ", u.data());
 
@@ -1205,6 +1450,7 @@
         $('#dashboardScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
+        $('#changePasswordScreen').addClass('d-none');
 
         // Show current page
         $('#violationsScreen').removeClass('d-none');
@@ -1282,6 +1528,7 @@
         const violations = collection(db, 'violationList/');
         onSnapshot(violations, (violationsQuerySnapshot) => {
           violationsDataTable.clear(); // clear the table before adding new rows
+
           violationsQuerySnapshot.forEach((v) => {
             //console.log(v.id, " => ", v.data());
 
@@ -1360,7 +1607,78 @@
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
         });
-      }        
+      }  
+
+      function showChangePasswordPage(page) {
+        $('#loadingMain ').removeClass('d-flex  ');
+        $('#loadingMain ').addClass('d-none');
+
+        setActivePage(page);
+
+        $('#loginScreen').addClass('d-none');
+        $('#dashboardScreen').addClass('d-none');
+        $('#transactionsScreen').addClass('d-none');
+        $('#usersScreen').addClass('d-none');
+        $('#violationsScreen').addClass('d-none');
+
+        // Show current page
+        $('#changePasswordScreen').removeClass('d-none');
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, show the violations
+            loadChangePasswordPage();
+          } else {
+            // User is not signed in, redirect to login page
+            window.location.href = 'index.html';
+          }
+        });
+      }    
+
+      function loadChangePasswordPage() {
+        //console.log('Showing change password page');
+
+        $('#saveNewPassword').click(function(e) {
+          e.preventDefault(); // prevent form submission
+
+          // get password values
+          var oldPassword = $('#oldPassword').val();
+          var newPassword = $('#newPassword').val();
+          var confirmPassword = $('#confirmPassword').val();
+
+          if (newPassword !== confirmPassword) {
+            // handle password mismatch error
+            alert('Password and Confirm Password must be matched!');
+          } else if (newPassword.length < 6) {
+            alert('Password must be greater than or equal to 6!');
+          } else {
+            
+            $('#loadingMain').addClass('d-flex');
+            $('#loadingMain').removeClass('d-none');
+            // proceed with password change
+            updatePassword(auth.currentUser, newPassword)
+            .then(() => {
+              // password changed successfully
+              signOut(auth)
+              .then(() => {
+                $('#loadingMain ').removeClass('d-flex  ');
+                $('#loadingMain ').addClass('d-none');
+                alert("Password changed successfully! Please relogin.");
+                window.location.href = 'index.html';
+              })
+              .catch((error) => {
+                // An error happened.
+              });
+            })
+            .catch((error) => {
+              // handle error
+              alert("Error changing password: " + error.message);
+              $('#loadingMain ').removeClass('d-flex  ');
+              $('#loadingMain ').addClass('d-none');
+            });
+          }
+        }); 
+      }
     </script>
   </body>
 </html>
