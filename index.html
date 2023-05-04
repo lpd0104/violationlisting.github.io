@@ -670,7 +670,7 @@
                 <tbody>
                   <tr>
                     <td>Received the amount stated above</td>
-                    <td><br><br>By:<br><span id="receiptOfficer">_________________________</span><br>COLLECTING OFFICER</td>
+                    <td><br><br>By:<br><input id="receiptOfficer" type="text" placeholder="Enter name"><br>COLLECTING OFFICER</td>
                   </tr>
                 </tbody>
               </table>
@@ -1237,7 +1237,7 @@
 
                 const adminName = localStorage.getItem('adminName');
 
-                $('#receiptOfficer').text(adminName);
+                $('#receiptOfficer').val(adminName);
 
                 $('#receiptModal').modal('show');
               }).catch((error) => {
