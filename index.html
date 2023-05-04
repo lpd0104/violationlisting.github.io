@@ -7,7 +7,7 @@
     <!-- Add Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- CSS file -->
-    <link href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.13.4/b-2.3.6/b-html5-2.3.6/date-1.4.1/sb-1.4.2/datatables.min.css" rel="stylesheet"/>
+    <link href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.13.4/b-2.3.6/b-html5-2.3.6/b-print-2.3.6/sb-1.4.2/datatables.min.css" rel="stylesheet"/>
  
     <title>Admin Login</title>
 
@@ -50,11 +50,6 @@
       .dashboard-card a {
         color: black;
         text-decoration: none;
-      }
-
-      .buttons-excel {
-        background-color: #007bff;
-        border-color: #007bff;  
       }
 
       .dataTables_length {
@@ -322,7 +317,7 @@
                   <div class="col-sm-4 mb-3">
                     <div class="card bg-danger text-white">
                       <div cass="card-body">
-                        <h1 class="p-4 text-center">1</h1>
+                        <h1 id="totalViolations" class="p-4 text-center">-</h1>
                       </div>
                       <div class="card-footer">
                         Total No. of Violations
@@ -333,7 +328,7 @@
                   <div class="col-sm-4 mb-3">
                     <div class="card bg-success text-white">
                       <div cass="card-body">
-                        <h1 class="p-4 text-center">1</h1>
+                        <h1 id="paidViolatorsPerDay" class="p-4 text-center">-</h1>
                       </div>
                       <div class="card-footer">
                         No. of Paid Violators (per Day)
@@ -344,7 +339,7 @@
                   <div class="col-sm-4 mb-3">
                     <div class="card bg-warning text-white">
                       <div cass="card-body">
-                        <h1 class="p-4 text-center">1</h1>
+                        <h1 id="totalAmountPerDay" class="p-4 text-center">-</h1>
                       </div>
                       <div class="card-footer">
                         Total Amount (per Day)
@@ -696,7 +691,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     
     <!-- JavaScript files -->
-    <script src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.13.4/b-2.3.6/b-html5-2.3.6/date-1.4.1/sb-1.4.2/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.13.4/b-2.3.6/b-html5-2.3.6/b-print-2.3.6/date-1.4.1/sb-1.4.2/datatables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <script src="https://kit.fontawesome.com/618080302d.js" crossorigin="anonymous"></script>
@@ -989,23 +984,36 @@
           $('#cardHolder').empty();
 
           const promises = [];
-
+          let totalViolation = 0;
+          let totalAmountPerDay = 0.00;
+          let totalViolatorsPaidPerDay = 0;
+          let totalViolationsList = 0;
           transactionsListQuerySnapshot.forEach((vl) => {
+                    totalViolationsList++;
             // Get Plate No Details
             const plateNoDetails = collection(db, 'plateNoDetails/');
             const promise = new Promise((resolve, reject) => {
               onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
                 let pvlCount = 0;
                 plateNoDetailsQuerySnapshot.forEach((pl) => {
+
+                  if (pl.data().payment.paid) {
+                    totalViolatorsPaidPerDay++;
+                  }
+
                   pl.data().violations.forEach((v) => {
                     const vData = v.split(',');
                     const pvl = vData[0];
+                    const amount = vData[2];
                     if (vl.id == pvl) {
                       pvlCount++;
+                      totalViolation++;
+                      if (pl.data().payment.paid) {
+                        totalAmountPerDay = totalAmountPerDay + parseFloat(amount);
+                      }
                     }
                   });
                 });
-
                 if (pvlCount != 0) {
                   $('#cardHolder').append(`
                       <div class="dashboard-card col-lg-3 col-md-4 col-sm-6 mb-4">
@@ -1027,6 +1035,10 @@
           });
 
           await Promise.all(promises);
+
+          $('#totalViolations').text(totalViolation);
+          $('#paidViolatorsPerDay').text(totalViolatorsPaidPerDay/totalViolationsList);
+          $('#totalAmountPerDay').text(totalAmountPerDay.toFixed(2));
 
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
@@ -1272,7 +1284,7 @@
             ,{
               extend: 'excel',
               text: 'Export to Excel',
-            }
+            }      
           ],
           dom: 'Blfrtip',
           pageLength: 50,
