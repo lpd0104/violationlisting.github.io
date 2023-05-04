@@ -14,10 +14,11 @@
     <style>
       body {
         background-image: url("bg_v1_wide.png");
+        position: relative;
       }
 
       #header {
-        height: 164px;
+        height: 56px;
         /*margin-left:-120px;
         margin-right:-164px;
         margin-top:-15px;*/
@@ -57,18 +58,19 @@
       }
 
       .sidebar {
-        /*position: fixed;*/
+        position: fixed;
         top: 0;
         left: 0;
         height: 100%;
-        /*width: 200px;*/
         padding: 15px;
-        z-index: 1; /* Add this line */
+        z-index: 1;
+        overflow-y: auto;
       }
 
       .sidebar-sticky {
-        /*position: sticky;*/
+        position: sticky;
         top: 0;
+        height: 100%;
       }
 
       .sidebar ul {
@@ -186,9 +188,48 @@
     </div>
 
     <div id="menuScreen" class="d-none vh-100">
+      <!--nav class="navbar navbar-expand-md fixed-top d-sm-none p-0">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse bg-light" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item ">
+              <a class="nav-link active" href="?page=dashboard">
+                <i class="fas fa-list"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="?page=transactions">
+                <i class="fas fa-list"></i> Transactions
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="?page=generate-reports">
+                <i class="fas fa-list-alt"></i> Generate Report
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="?page=users">
+                <i class="fas fa-user"></i> Users
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="?page=violations">
+                <i class="fas fa-list"></i> Violations
+              </a>
+            </li>
+            <li class="nav-item">
+              <a id="logoutButton" class="nav-link" href="#">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav-->
       <div class="container-fluid h-100">
         <div class="row h-100">
-          <div class="col-lg-2 p-0 col-md-3 col-sm-4 bg-light sidebar h-100">
+          <div class="col-lg-2 p-0 col-md-3 col-sm-4 bg-light sidebar h-100 d-none d-sm-block">
             <div class="sidebar-sticky h-100">
               <ul class="nav flex-column">
                 <li class="nav-item">
@@ -220,11 +261,6 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link p-3" href="?page=change-password">
-                    <i class="fas fa-lock"></i> Change Password
-                  </a>
-                </li>
-                <li class="nav-item">
                   <a id="logoutButton" class="nav-link p-3" href="#">
                     <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
@@ -233,11 +269,16 @@
             </div>
           </div>
 
+          <div class="col-lg-2 p-0 col-md-3 col-sm-4">
+          </div>
+
           <div class="col-lg-10 p-0 col-md-9 col-sm-8 content">
 
 
-            <div id="header" class="bg-primary mb-4 p-4 d-flex justify-content-center align-items-center">
-              <h1 class="text-white"></h1>
+            <div id="header" class="bg-primary mb-4 p-4 d-flex justify-content-between align-items-center">
+          
+                <h3 class="text-white text-center flex-grow-1"></h3>
+                <div><span class="text-white" id="profileName"></span>&nbsp;&nbsp;<a href="?page=profile"><i class="text-white fa fa-user"></i></a></div>
             </div>
 
             <div id="loadingMain" class="d-flex justify-content-center">
@@ -248,8 +289,43 @@
             <div class="container">
 
               <div id="dashboardScreen" class="d-none">
+                <div class="row mt-5">
+                  <div class="col-sm-4 mb-3">
+                    <div class="card bg-danger text-white">
+                      <div cass="card-body">
+                        <h1 class="p-4 text-center">1</h1>
+                      </div>
+                      <div class="card-footer">
+                        Total No. of Violations
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-sm-4 mb-3">
+                    <div class="card bg-success text-white">
+                      <div cass="card-body">
+                        <h1 class="p-4 text-center">1</h1>
+                      </div>
+                      <div class="card-footer">
+                        No. of Paid Violators (per Day)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-sm-4 mb-3">
+                    <div class="card bg-warning text-white">
+                      <div cass="card-body">
+                        <h1 class="p-4 text-center">1</h1>
+                      </div>
+                      <div class="card-footer">
+                        Total Amount (per Day)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <hr class="border-white m-5">
                 <div id="cardHolder" class="row justify-content-center">
-                  
+                    
                 </div>
               </div>
 
@@ -285,6 +361,7 @@
                         <th>Vehicle #</th>
                         <th>Vehicle Type</th>
                         <th>License Confiscated?</th>
+                        <th>Enforcer</th>
                         <th>Violations</th>
                         <th>Total Fee</th>
                         <th>Action</th>
@@ -301,19 +378,12 @@
                   <table id="reportsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px;">
                     <thead>
                       <tr>
+                        <th>Date</th>
                         <th>Reference #</th>
                         <th>Full Name</th>
-                        <th>Address</th>
-                        <th>Birthdate</th>
                         <th>License #</th>
-                        <th>Plate #</th>
-                        <th>Registered #</th>
-                        <th>Vehicle #</th>
-                        <th>Vehicle Type</th>
-                        <th>License Confiscated?</th>
                         <th>Violations</th>
-                        <th>Total Fee</th>
-                        <th>Action</th>
+                        <th>Paid Violation Fee</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -329,6 +399,7 @@
                   <table id="usersTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
                     <thead>
                       <tr>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Type</th>
                       </tr>
@@ -357,9 +428,30 @@
                 </div>
               </div>
 
-              <div id="changePasswordScreen" class="d-none">
+              <div id="profileScreen" class="d-none">
+                <div class="d-flex justify-content-center mb-3">
+                  <div class="card bg-light w-50">
+                    <div class="card-header ">
+                      <h5>Info</h5>
+                    </div>
+                    <div class="card-body ">
+                      <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" type="text" id="nameProfile" disabled>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" >Email</label>
+                        <input class="form-control" type="text" id="emailProfile" disabled>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="d-flex justify-content-center">
-                  <div class="card bg-light p-4 w-50">
+                  <div class="card bg-light w-50">
+                    <div class="card-header ">
+                      <h5>Change Password</h5>
+                    </div>
                     <div class="card-body ">
                       <form>
                         <div class="form-group">
@@ -402,6 +494,10 @@
             </div>
             <div class="modal-body">
               <form id="addUserForm">
+                <div class="mb-3">
+                  <label for="nameAddUser" class="form-label">Name</label>
+                  <input type="text" class="form-control" id="nameAddUser" placeHolder="Enter name" required>
+                </div>
                 <div class="mb-3">
                   <label for="emailAddUser" class="form-label">Email</label>
                   <input type="email" class="form-control" id="emailAddUser" placeHolder="Enter email" required>
@@ -533,7 +629,7 @@
                 <tbody>
                   <tr>
                     <td>Received the amount stated above</td>
-                    <td><br><br>By:<br><span id="receiptOffice">_________________________</span><br>COLLECTING OFFICER</td>
+                    <td><br><br>By:<br><span id="receiptOfficer">_________________________</span><br>COLLECTING OFFICER</td>
                   </tr>
                 </tbody>
               </table>
@@ -637,8 +733,8 @@
             showViolationsPage(page);
           } 
           // CHANGE PASSWORD
-          else if (page === 'change-password') {
-            showChangePasswordPage(page);
+          else if (page === 'profile') {
+            showProfilePage(page);
           } 
         } else if (queryParams.has('page') && queryParams.has('id')) {
           var page = queryParams.get('page');
@@ -707,6 +803,8 @@
             // Sign in with email and password using Firebase Auth
             signInWithEmailAndPassword(auth, email, password)
               .then((userCredential) => {
+
+                localStorage.setItem('email', email); 
                 // User authenticated successfully
                 checkUserLevel(userCredential.user.uid);
               })
@@ -738,6 +836,9 @@
             var userLevel = doc.data().type;
 
             if (userLevel === 'admin') {
+              const adminName = doc.data().name;
+              localStorage.setItem('adminName', adminName); 
+          
               // User is an admin
               successfulLogin();
             } else {
@@ -790,13 +891,11 @@
             actualPage = 'Users with Violation';
           } else if (page.includes('generate-reports')) {
             actualPage = 'Generate Reports';
-          } else if (page.includes('change-password')) {
-            actualPage = 'Change Password';
           } else {
             actualPage = page
           }
           document.title = actualPage.charAt(0).toUpperCase() + actualPage.slice(1);
-          $('#header h1').text(document.title);
+          $('#header h3').text(document.title);
           
           if (linkPage.includes(page)) {
             $(this).addClass('active');
@@ -804,6 +903,9 @@
             $(this).removeClass('active');
           }
         });
+
+        const adminName = localStorage.getItem('adminName');
+        $('#profileName').text(adminName);
       }
 
       function showDashboardPage(page) {
@@ -814,7 +916,7 @@
         $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         // Show current page
         $('#dashboardScreen').removeClass('d-none');
@@ -831,48 +933,56 @@
       }
 
       function loadDashboardPage() {
-        //console.log('Showing dashboard page');
-        
+        console.log('Showing dashboard page');
+
         // Get Violation List
         const transactionsList = collection(db, 'violationList/');
-        onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
+        onSnapshot(transactionsList, async (transactionsListQuerySnapshot) => {
+          $('#cardHolder').empty();
+
+          const promises = [];
 
           transactionsListQuerySnapshot.forEach((vl) => {
             // Get Plate No Details
             const plateNoDetails = collection(db, 'plateNoDetails/');
-            var pvlCount = 0;
-            onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
-              plateNoDetailsQuerySnapshot.forEach((pl) => {
-                pl.data().violations.forEach((pvl) => {
-                  if (vl.id == pvl) {
-
-                    //console.log(vl.data().type); 
-                    pvlCount++;
-                  }
+            const promise = new Promise((resolve, reject) => {
+              onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
+                let pvlCount = 0;
+                plateNoDetailsQuerySnapshot.forEach((pl) => {
+                  pl.data().violations.forEach((v) => {
+                    const vData = v.split(',');
+                    const pvl = vData[0];
+                    if (vl.id == pvl) {
+                      pvlCount++;
+                    }
+                  });
                 });
+                //console.log(pvlCount);
+                if (pvlCount != 0) {
+                  $('#cardHolder').append(`
+                      <div class="dashboard-card col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <a href="?page=users-with-violation&id=`+vl.id+`&title=`+vl.data().type+`" class="card bg-primary text-white square h-100">
+                          <div class="card-header d-flex align-items-center" style="height:5rem">
+                            <p class="card-text">`+ vl.data().type +`</p>
+                          </div>
+                          <div class="card-body d-flex align-items-center" style="height:10rem">
+                            <h2 class="h1 w-100 text-center">`+ pvlCount +`</h2>
+                          </div>
+                        </a>
+                      </div>`);
+                }
+                pvlCount = 0;
+                resolve();
               });
-              //console.log(pvlCount);
-              if (pvlCount != 0) {
-                $('#cardHolder').append(`
-                <div class="dashboard-card col-lg-3 col-md-4 col-sm-6 mb-4">
-                  <a href="?page=users-with-violation&id=`+vl.id+`&title=`+vl.data().type+`" class="card text-black square h-100">
-            
-                    <div class="card-header d-flex align-items-center" style="height:5rem">
-                      <p class="card-text">`+ vl.data().type +`</p>
-                    </div>
-                    <div class="card-body d-flex align-items-center" style="height:10rem">
-                      <h2 class="h1 w-100 text-center">`+ pvlCount +`</h2>
-                    </div>
-                  </a>
-                </div>`);
-              }
-              $('#loadingMain').removeClass('d-flex');
-              $('#loadingMain').addClass('d-none');
-              pvlCount = 0;
             });
+            promises.push(promise);
           });
-                      
-        });          
+
+          await Promise.all(promises);
+
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
+        });
       }
 
       function showUserViolationsPage(page, id, title) {
@@ -885,7 +995,7 @@
         $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         $('#userViolationsSubtitle').text(title); 
 
@@ -928,7 +1038,9 @@
             console.log(pd.id, " => ", pd.data());
 
             var pdData = pd.data(); 
-            pdData.violations.forEach((pv) => {
+            pdData.violations.forEach((v) => {
+              var vData = v.split(',');
+              var pv = vData[0];
               if (pv == id) {                  
                 userViolationsDataTable.row.add([pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname, pdData.lnumber, title]);
               }
@@ -950,7 +1062,7 @@
         $('#reportsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         // Show current page
         $('#transactionsScreen').removeClass('d-none');
@@ -985,86 +1097,86 @@
         const plateNoDetails = collection(db, 'plateNoDetails/');
         onSnapshot(plateNoDetails, (plateNoDetailsQuerySnapshot) => {
 
-          const plateNoDetailsCount = plateNoDetailsQuerySnapshot.size;
-
           let transactionsString = ''; 
-
           let transactionsAmount = 0;
-          let i = 0;
+          transactionsDataTable.clear();
 
           plateNoDetailsQuerySnapshot.forEach((pd) => {
-            //console.log(pd.id, " => ", pd.data());
-            transactionsDataTable.clear();
+            console.log(pd.id, " => ", pd.data());
 
-            // Get Violation List
-            const transactionsList = collection(db, 'violationList/');
-            onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
-              i++;
+            var pdData = pd.data();
+            var licenseConfString = 'No';
+            if (pdData.licconf == 1) {
+              licenseConfString = 'Yes';
+            }
+            
 
-              var pdData = pd.data();
-              var licenseConfString = 'No';
-              if (pdData.licconf == 1) {
-                licenseConfString = 'Yes';
-              }
-              
+            pdData.violations.forEach((v, index) => {
+              var vData = v.split(',');
+              var vID = vData[0];
+              var type = vData[1];
+              var amount = vData[2];
 
-              pdData.violations.forEach((vID, index) => {
-                //console.log(pdData.amounts[index]);
-                var amount = pdData.amounts[index]; 
-                
-                transactionsListQuerySnapshot.forEach((vl) => {
-
-                  if (vl.id == vID) {
-                    transactionsString = transactionsString + '*' + vl.data().type + '-' + amount + '\n';
-                    transactionsAmount = transactionsAmount + parseFloat(amount);
-                  }
-                });
-                
-              });
-
-              
-
-              var button = '<button class="btn btn-success btn-sm settle-button" data-reference="' + pd.id + '">Settle</button>';
-              if (pdData.paid == true) {
-                button = '<button class="btn btn-dark btn-sm " disabled>Paid</button>'
-              }
-
-              transactionsDataTable.row.add([
-                pd.id,
-                pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
-                pdData.address,
-                pdData.bdate,
-                pdData.lnumber,
-                pdData.no,
-                pdData.rnumber,
-                pdData.vnumber,
-                pdData.vtype,
-                licenseConfString,
-                transactionsString,
-                transactionsAmount.toFixed(2),
-                button
-              ]);
-              
-              if (i == plateNoDetailsCount) {
-                //console.log(transactionsString);
-                transactionsDataTable.order([[ 0, "desc" ]]).draw();
-
-                $('#loadingMain').removeClass('d-flex');
-                $('#loadingMain').addClass('d-none');
-              }
-              transactionsString = '';
-              transactionsAmount = 0;
+              transactionsString = transactionsString + '*' + type + '-' + amount + '\r\n<br>';
+              transactionsAmount = transactionsAmount + parseFloat(amount);
             });
+
+            var button = '<button class="btn btn-success btn-sm settle-button" data-reference="' + pd.id + '" data-amount="'+ transactionsAmount.toFixed(2) +'">Settle</button>';
+            if (pdData.payment.paid == true) {
+              button = '<button class="btn btn-dark btn-sm " disabled>Paid</button>'
+            }
+
+            transactionsDataTable.row.add([
+              pd.id,
+              pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
+              pdData.address,
+              pdData.bdate,
+              pdData.lnumber,
+              pdData.no,
+              pdData.rnumber,
+              pdData.vnumber,
+              pdData.vtype,
+              licenseConfString,
+              pdData.enforcerName,
+              transactionsString,
+              transactionsAmount.toFixed(2),
+              button
+            ]);
+
+            transactionsString = '';
+            transactionsAmount = 0;
+              
+
           });
+
+          transactionsDataTable.order([[ 0, "desc" ]]).draw();
+
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
 
           $('#transactionsTable').on('click', '.settle-button', function() {
             const reference = $(this).data('reference');
+            const paidAmount = $(this).data('amount');
             const button = $(this);
 
             // Update the amount in Firebase
             const transactionRef = doc(db, 'plateNoDetails', reference.toString());
 
-            updateDoc(transactionRef, { paid: true }).then(() => {
+
+            var today = new Date();
+            var day = today.getDate();
+            var month = today.getMonth() + 1; // month is zero-based, so we add 1
+            var year = today.getFullYear();
+            var currentDate = month + '/' + day + '/' + year;
+
+            updateDoc(transactionRef, {
+              payment: {
+                paid: true,
+                date: currentDate,
+                amount: paidAmount
+              }
+            })
+            .then(() => {
               // Update the button text and disable the button
               button.text('Paid');
               button.removeClass('btn-success');
@@ -1075,12 +1187,7 @@
               // Get the receipt details from Firebase
               getDoc(transactionRef).then((doc) => {
                 const receiptDetails = doc.data();
-
-                var today = new Date();
-                var day = today.getDate();
-                var month = today.getMonth() + 1; // month is zero-based, so we add 1
-                var year = today.getFullYear();
-                var currentDate = month + '/' + day + '/' + year;
+                
                 console.log(currentDate); // output: "5/3/2023"
 
                 // Display the receipt details in the modal
@@ -1090,13 +1197,18 @@
                 var total = 0.00;
                 $('#receiptAmountDetails tbody').empty();
 
-                receiptDetails.violations.forEach((vl, index) => {
-                  $('#receiptAmountDetails tbody').append('<tr><td>' + vl + '</td><td>' + vl + '</td><td>' + receiptDetails.amounts[index] + '</td></tr>');
-                  total = total + parseFloat(receiptDetails.amounts[index]);
+                receiptDetails.violations.forEach((v, index) => {
+                  var vData = v.split(',');
+                  var tag = vData[0];
+                  var type = vData[1];
+                  var amount = vData[2];
+                  $('#receiptAmountDetails tbody').append('<tr><td>' + type + '</td><td>' + tag + '</td><td>' + amount + '</td></tr>');
+                  total = total + parseFloat(amount);
                 });
                 $('#receiptAmountDetails tbody').append('<tr><td>TOTAL</td><td></td><td>'+ total.toFixed(2) +'</td></tr>');
 
-                //$('#receiptAmountDetails').text();
+
+                $('#receiptOfficer').text(receiptDetails.enforcerName);
 
                 $('#receiptModal').modal('show');
               }).catch((error) => {
@@ -1116,7 +1228,7 @@
         $('#transactionsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         // Show current page
         $('#reportsScreen').removeClass('d-none');
@@ -1155,127 +1267,42 @@
 
           let transactionsString = ''; 
 
-          let transactionsAmount = 0;
-          let i = 0;
+          reportsDataTable.clear();
 
           plateNoDetailsQuerySnapshot.forEach((pd) => {
-            //console.log(pd.id, " => ", pd.data());
-            reportsDataTable.clear();
+            console.log(pd.id, " => ", pd.data());
 
-            // Get Violation List
-            const transactionsList = collection(db, 'violationList/');
-            onSnapshot(transactionsList, (transactionsListQuerySnapshot) => {
-              i++;
+            var pdData = pd.data();
+            var licenseConfString = 'No';
+            if (pdData.licconf == 1) {
+              licenseConfString = 'Yes';
+            }
+            
 
-              var pdData = pd.data();
-              var licenseConfString = 'No';
-              if (pdData.licconf == 1) {
-                licenseConfString = 'Yes';
-              }
-              
-
-              pdData.violations.forEach((vID, index) => {
-                //console.log(pdData.amounts[index]);
-                var amount = pdData.amounts[index]; 
-                
-                transactionsListQuerySnapshot.forEach((vl) => {
-
-                  if (vl.id == vID) {
-                    transactionsString = transactionsString + '*' + vl.data().type + '-' + amount + '\n';
-                    transactionsAmount = transactionsAmount + parseFloat(amount);
-                  }
-                });
-                
-              });
-
-              
-
-              var button = '<button class="btn btn-success btn-sm settle-button" data-reference="' + pd.id + '">Settle</button>';
-              if (pdData.paid == true) {
-                button = '<button class="btn btn-dark btn-sm " disabled>Paid</button>'
-              }
-
-              reportsDataTable.row.add([
-                pd.id,
-                pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
-                pdData.address,
-                pdData.bdate,
-                pdData.lnumber,
-                pdData.no,
-                pdData.rnumber,
-                pdData.vnumber,
-                pdData.vtype,
-                licenseConfString,
-                transactionsString,
-                transactionsAmount.toFixed(2),
-                button
-              ]);
-              
-              if (i == plateNoDetailsCount) {
-                //console.log(transactionsString);
-                reportsDataTable.order([[ 0, "desc" ]]).draw();
-
-                $('#loadingMain').removeClass('d-flex');
-                $('#loadingMain').addClass('d-none');
-              }
-              transactionsString = '';
-              transactionsAmount = 0;
+            pdData.violations.forEach((v, index) => {
+              var vData = v.split(',');
+              var type = vData[1];
+              var amount = vData[2];
+              transactionsString = transactionsString + '*' + type + '-' + amount + '\r\n<br>';
             });
+
+            
+            reportsDataTable.row.add([
+              pdData.payment.date,
+              pd.id,
+              pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
+              pdData.no,
+              transactionsString,
+              pdData.payment.amount
+            ]);
+            
+            transactionsString = '';
           });
 
-          $('#transactionsTable').on('click', '.settle-button', function() {
-            const reference = $(this).data('reference');
-            const button = $(this);
+          reportsDataTable.order([[ 0, "desc" ]]).draw();
 
-            // Update the amount in Firebase
-            const transactionRef = doc(db, 'plateNoDetails', reference.toString());
-
-            updateDoc(transactionRef, { paid: true }).then(() => {
-              // Update the button text and disable the button
-              button.text('Paid');
-              button.removeClass('btn-success');
-              button.addClass('btn-dark');
-              button.prop('disabled', true);
-              console.log("Document successfully updated!");
-
-              // Get the receipt details from Firebase
-              getDoc(transactionRef).then((doc) => {
-                const receiptDetails = doc.data();
-
-                var today = new Date();
-                var day = today.getDate();
-                var month = today.getMonth() + 1; // month is zero-based, so we add 1
-                var year = today.getFullYear();
-                var currentDate = month + '/' + day + '/' + year;
-                console.log(currentDate); // output: "5/3/2023"
-
-                // Display the receipt details in the modal
-                $('#receiptDate').text(currentDate);
-                $('#receiptPayor').text(receiptDetails.fname + ' ' + receiptDetails.mname[0] + '. ' + receiptDetails.lname)
-                $('#receiptID').text(receiptDetails.id);
-                var total = 0.00;
-                $('#receiptAmountDetails tbody').empty();
-
-                receiptDetails.violations.forEach((vl, index) => {
-                  $('#receiptAmountDetails tbody').append('<tr><td>' + vl + '</td><td>' + vl + '</td><td>' + receiptDetails.amounts[index] + '</td></tr>');
-                  total = total + parseFloat(receiptDetails.amounts[index]);
-                });
-                $('#receiptAmountDetails tbody').append('<tr><td>TOTAL</td><td></td><td>'+ total.toFixed(2) +'</td></tr>');
-
-                //$('#receiptAmountDetails').text();
-
-                $('#receiptModal').modal('show');
-              }).catch((error) => {
-                console.error('Error getting receipt details:', error);
-              });
-            }).catch((error) => {
-              console.error('Error updating amount:', error);
-            });
-          });
-
-          
-
-
+          $('#loadingMain').removeClass('d-flex');
+          $('#loadingMain').addClass('d-none');
         });
       }
 
@@ -1287,7 +1314,7 @@
         $('#transactionsScreen').addClass('d-none');
         $('#reportsScreen').addClass('d-none');
         $('#violationsScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         // Show current page
         $('#usersScreen').removeClass('d-none');
@@ -1360,6 +1387,7 @@
 
       function signup() {
         // Get the input values from the modal
+        const name = $('#nameAddUser').val();
         const email = $('#emailAddUser').val();
         const password = $('#passwordAddUser').val();
         const cpassword = $('#cpasswordAddUser').val();
@@ -1384,6 +1412,7 @@
 
             // Add the user type to the Firestore database
             setDoc(doc(users, user.uid), {
+              name: name,
               email: email,
               type: userType,
               id: user.uid
@@ -1432,7 +1461,7 @@
             //console.log(u.id, " => ", u.data());
 
             var uData = u.data();
-            usersDataTable.row.add([uData.email, uData.type]);
+            usersDataTable.row.add([uData.name, uData.email, uData.type]);
 
           });
 
@@ -1450,7 +1479,7 @@
         $('#dashboardScreen').addClass('d-none');
         $('#transactionsScreen').addClass('d-none');
         $('#usersScreen').addClass('d-none');
-        $('#changePasswordScreen').addClass('d-none');
+        $('#profileScreen').addClass('d-none');
 
         // Show current page
         $('#violationsScreen').removeClass('d-none');
@@ -1609,7 +1638,7 @@
         });
       }  
 
-      function showChangePasswordPage(page) {
+      function showProfilePage(page) {
         $('#loadingMain ').removeClass('d-flex  ');
         $('#loadingMain ').addClass('d-none');
 
@@ -1622,12 +1651,12 @@
         $('#violationsScreen').addClass('d-none');
 
         // Show current page
-        $('#changePasswordScreen').removeClass('d-none');
+        $('#profileScreen').removeClass('d-none');
 
         onAuthStateChanged(auth, (user) => {
           if (user) {
             // User is signed in, show the violations
-            loadChangePasswordPage();
+            loadProfilePage();
           } else {
             // User is not signed in, redirect to login page
             window.location.href = 'index.html';
@@ -1635,8 +1664,14 @@
         });
       }    
 
-      function loadChangePasswordPage() {
+      function loadProfilePage() {
         //console.log('Showing change password page');
+
+
+        const adminName = localStorage.getItem('adminName');
+        const email = localStorage.getItem('email');
+        $('#nameProfile').val(adminName);
+        $('#emailProfile').val(email);
 
         $('#saveNewPassword').click(function(e) {
           e.preventDefault(); // prevent form submission
@@ -1652,7 +1687,7 @@
           } else if (newPassword.length < 6) {
             alert('Password must be greater than or equal to 6!');
           } else {
-            
+
             $('#loadingMain').addClass('d-flex');
             $('#loadingMain').removeClass('d-none');
             // proceed with password change
