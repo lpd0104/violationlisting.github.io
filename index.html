@@ -423,13 +423,14 @@
               <div id="usersScreen" class="d-none">
                 <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addUserModal"><span><i class="fa fa-user"></i>&nbsp;&nbsp;Add User</span></button>
                 
-                <div class="card bg-light p-4">
+                <div class="card bg-light p-4 table-responsive">
                   <table id="usersTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
                     <thead>
                       <tr>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Type</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -441,7 +442,7 @@
 
               <div id="violationsScreen" class="d-none">
                 <button type="button" class="btn btn-success mb-3" data-toggle="modal" data-target="#addViolationModal"><span><i class="fa fa-list"></i>&nbsp;&nbsp;Add Violation</span></button>
-                <div class="card bg-light p-4">
+                <div class="card bg-light p-4 table-responsive">
                   <table id="violationsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px">
                     <thead>
                       <tr>
@@ -704,7 +705,7 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
       import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, updatePassword,sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
-      import { doc, getDoc, getFirestore, getDocs, collection, onSnapshot, setDoc, updateDoc} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
+      import { doc, getDoc, getFirestore, getDocs, collection, onSnapshot, setDoc, updateDoc, deleteDoc} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
 
       // Your web app's Firebase configuration
       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -1515,15 +1516,59 @@
           usersQuerySnapshot.forEach((u) => {
 
             var uData = u.data();
-            usersDataTable.row.add([uData.name, uData.email, uData.type]);
+            var deleteBtn = '<button type="button" class="btn btn-danger btn-sm delete-btn" data-id="' + u.id + '"><i class="fa fa-trash"></i> Delete</button>';
+      
+            usersDataTable.row.add([uData.name, uData.email, uData.type, deleteBtn]);
 
           });
 
           usersDataTable.draw();    
 
+
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
+
+          // Add click event for delete button
+          $('#usersTable').on('click', '.delete-btn', function(e) {
+            var id = $(this).data('id');
+            deleteDoc(doc(users, id)).then(() => {
+              console.log("User successfully deleted!");
+              // Delete user from Firebase Authentication
+              deleteUserFromAuth(id);
+              
+            }).catch((error) => {
+              console.error("Error removing user: ", error);
+            });
+            
+          });
         });
+      }
+
+      function deleteUserFromAuth(id) {
+        // Delete user from Firebase Authentication
+        const user = auth.currentUser;
+        if (user) {
+          user.delete()
+            .then(() => {
+              // User deleted from Firebase Authentication successfully
+              console.log('User deleted from Firebase Authentication successfully');
+
+              // Hide loading spinner
+              $('#loadingMain').addClass('d-none');
+            })
+            .catch((error) => {
+              // Error deleting user from Firebase Authentication
+              console.error('Error deleting user from Firebase Authentication: ', error);
+
+              // Hide loading spinner
+              $('#loadingMain').addClass('d-none');
+            });
+        } else {
+          console.error('User is not signed in');
+
+          // Hide loading spinner
+          $('#loadingMain').addClass('d-none');
+        }
       }
 
       function showViolationsPage(page) {
