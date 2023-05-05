@@ -415,6 +415,8 @@
                     <tbody>
                     </tbody>
                   </table>
+                  <br>
+                  <h3 id="totalAmountReport" class="w-100 text-right">Total: 0.00</h3>
                 </div>
               </div>
 
@@ -1325,6 +1327,8 @@
 
           reportsDataTable.clear();
 
+          let totalAmount = 0;
+
           plateNoDetailsQuerySnapshot.forEach((pd) => {
             console.log(pd.id, " => ", pd.data());
 
@@ -1342,7 +1346,9 @@
               transactionsString = transactionsString + '*' + type + '-' + amount + '\r\n<br>';
             });
 
-            
+            if (pdData.payment.paid) {
+              totalAmount = totalAmount + parseFloat(pdData.payment.amount);
+            }
             reportsDataTable.row.add([
               pdData.payment.date,
               pd.id,
@@ -1356,7 +1362,7 @@
           });
 
           reportsDataTable.order([[ 0, "desc" ]]).draw();
-
+          $('#totalAmountReport').text('Total: ' + totalAmount.toFixed(2));
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
         });
