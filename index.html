@@ -430,6 +430,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Type</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -884,8 +885,9 @@
           if (doc.exists()) {
             // Get user level from document data
             var userLevel = doc.data().type;
+            var userDisabled = doc.data().disabled;
 
-            if (userLevel === 'admin') {
+            if (userLevel === 'admin' && !userDisabled) {
               const adminName = doc.data().name;
               localStorage.setItem('adminName', adminName); 
           
@@ -1471,7 +1473,8 @@
               name: name,
               email: email,
               type: userType,
-              id: user.uid
+              id: user.uid,
+              disabled: false,
             })
             .then(() => {
               // User added successfully
@@ -1515,14 +1518,46 @@
           usersQuerySnapshot.forEach((u) => {
 
             var uData = u.data();
-            usersDataTable.row.add([uData.name, uData.email, uData.type]);
-
+            var disableBtn = '';
+  
+            if (!uData.disabled) {
+              disableBtn = '<button class="btn btn-sm btn-danger button-disable" data-id="'+u.id+'">Disable</button>';
+            } else {
+              disableBtn = '<button class="btn btn-sm btn-success button-enable" data-id="'+u.id+'">Enable</button>';
+            }
+            usersDataTable.row.add([uData.name, uData.email, uData.type, disableBtn]);
           });
 
-          usersDataTable.draw();    
+          usersDataTable.draw();   
+
+          $('#usersTable').on('click', '.button-disable', function() {
+            const id = $(this).data('id');
+            disableUser(id, true);
+          }) 
+
+          $('#usersTable').on('click', '.button-enable', function() {
+            const id = $(this).data('id');
+            disableUser(id, false);
+          }) 
 
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
+        });
+      }
+
+      function disableUser(userId, status) {
+        const userRef = doc(db, 'users', userId);
+        
+        updateDoc(userRef, {
+          disabled: status
+        }).then(() => {
+          if (status) {
+            console.log('User disabled successfully');
+          } else {
+            console.log('User enabled successfully');
+          }
+        }).catch((error) => {
+          console.error('Error disabling user:', error);
         });
       }
 
