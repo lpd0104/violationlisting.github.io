@@ -1001,8 +1001,15 @@
                 let pvlCount = 0;
                 plateNoDetailsQuerySnapshot.forEach((pl) => {
 
+
+                  var paymentDate = moment(pl.data().payment.date).format('YYYY-MM-DD');
+                  var currentDate = moment().format('YYYY-MM-DD');
+
                   if (pl.data().payment.paid) {
-                    totalViolatorsPaidPerDay++;
+
+                    if (paymentDate == currentDate) {
+                      totalViolatorsPaidPerDay++;
+                    }
                   }
 
                   pl.data().violations.forEach((v) => {
@@ -1013,7 +1020,9 @@
                       pvlCount++;
                       totalViolation++;
                       if (pl.data().payment.paid) {
-                        totalAmountPerDay = totalAmountPerDay + parseFloat(amount);
+                        if (paymentDate == currentDate) {
+                          totalAmountPerDay = totalAmountPerDay + parseFloat(amount);
+                        }
                       }
                     }
                   });
