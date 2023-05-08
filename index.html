@@ -373,6 +373,8 @@
 
               <div id="transactionsScreen" class="d-none">
                 <div class="card bg-light p-4 table-responsive">
+                  <button type="button" class="btn btn-primary btn-sm buttonsPrint">Print/PDF</button>
+                  <br>
                   <table id="transactionsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px;">
                     <thead>
                       <tr>
@@ -394,13 +396,31 @@
                     </thead>
                     <tbody>
                     </tbody>
+                    <tfoot>
+                      <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th class="total-column"></th>
+                        <th></th>
+                      </tr>
+                    </tfoot>
                   </table>
                 </div>
               </div>
 
               <div id="reportsScreen" class="d-none">
                 <div class="card bg-light p-4 table-responsive">
-                  <button type="button" class="btn btn-primary btn-sm" id="buttonsPrint">Print</button>
+                  <button type="button" class="btn btn-primary btn-sm buttonsPrint">Print/PDF</button>
                   <br>
                   <table id="reportsTable" class="table table-striped table-light table-bordered table-sm" style="width:100%; font-size: 12px;">
                 
@@ -416,9 +436,19 @@
                     </thead>
                     <tbody>
                     </tbody>
+                    <tfoot>
+                      <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th class="total-column"></th>
+                      </tr>
+                    </tfoot>
+
                   </table>
                   <br>
-                  <h3 id="totalAmountReport" class="w-100 text-right">Total: 0.00</h3>
                 </div>
               </div>
 
@@ -1057,7 +1087,7 @@
 
           $('#totalViolations').text(totalViolation);
           $('#paidViolatorsPerDay').text(totalViolatorsPaidPerDay/totalViolationsList);
-          $('#totalAmountPerDay').text(totalAmountPerDay.toFixed(2));
+          $('#totalAmountPerDay').text(totalAmountPerDay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
 
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
@@ -1135,12 +1165,34 @@
         transactionsDataTable = $('#transactionsTable').DataTable({
           pageLength: 50,
           dom: 'Blfrtip',
-          buttons: [
+          buttons:[
             {
+              extend: 'searchBuilder',
+              config: {
+                depthLimit: 2,
+              }
+            }
+            ,{
               extend: 'excel',
               text: 'Export to Excel',
             }
+          ],
+          columnDefs: [
+            {
+              targets: [3],
+              type: 'date',
+              render: function (data, type, row) {
+                // Parse date string to moment.js object
+                var date = moment(data, 'M/D/YYYY');
+                // Format date as required
+                return date.format('YYYY-MM-DD');
+              }
+            }
           ]
+        });
+
+        transactionsDataTable.on( 'draw.dt', function () {
+            updateTotal('#transactionsTable', 12);
         });
 
         onAuthStateChanged(auth, (user) => {
@@ -1155,6 +1207,9 @@
       }
 
       function loadTransactionsPage() {
+
+
+        printPage('#transactionsScreen', transactionsDataTable, '#transactionsTable', 'Transactions');
         
         // Get Plate No Details
         const plateNoDetails = collection(db, 'plateNoDetails/');
@@ -1165,7 +1220,7 @@
           transactionsDataTable.clear();
 
           plateNoDetailsQuerySnapshot.forEach((pd) => {
-            console.log(pd.id, " => ", pd.data());
+            //console.log(pd.id, " => ", pd.data());
 
             var pdData = pd.data();
             var licenseConfString = 'No';
@@ -1202,7 +1257,7 @@
               licenseConfString,
               pdData.enforcerName,
               transactionsString,
-              transactionsAmount.toFixed(2),
+              transactionsAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
               button
             ]);
 
@@ -1297,14 +1352,12 @@
             {
               extend: 'searchBuilder',
               config: {
-                depthLimit: 2
+                depthLimit: 2,
               }
             }
             ,{
               extend: 'excel',
               text: 'Export to Excel',
-            }, {
-              extend: 'pdf'
             }
           ],
           dom: 'Blfrtip',
@@ -1323,6 +1376,10 @@
           ]
         });
 
+        reportsDataTable.on( 'draw.dt', function () {
+            updateTotal('#reportsTable', 5);
+        });
+
         onAuthStateChanged(auth, (user) => {
           if (user) {
             // User is signed in
@@ -1334,9 +1391,72 @@
         });
       }
 
-      function loadReportsPage() {
+      function updateTotal(tableID, columnNum) {
+        var total = 0;
+        $(tableID +' tbody tr').each(function() {
+            var value = parseInt($(this).find('td:eq('+columnNum+')').text().replace(/,/g, ''));
+            total += isNaN(value) ? 0 : value;
+        });
 
-        $('#buttonsPrint').on('click', function() {
+        $(tableID +' tfoot tr th.total-column').text(total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+      }
+
+      function printPage(screenID, dataTable, tableID, title) {
+        $(screenID + ' .buttonsPrint').on('click', function() {
+          //reportsDataTable
+          // Remove unwanted elements from the table HTML
+          var tableHtml = $(dataTable.table().container()).find(tableID).html();
+          
+          // Open a new window and write the table HTML to it
+          var newWindow = window.open('', '', 'fullscreen=yes');
+          newWindow.document.write('<html><head><title>Print Table</title>');
+          newWindow.document.write(`
+            <style>
+              td, th {border: 1px solid #dee2e6;padding: 5px;}
+              .container1 {
+                display: flex;
+              }
+              .column1 {
+                flex: 1;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+            </style></head><body>`);
+          newWindow.document.write(`
+            <div class="container1">
+              <div class="column1">
+                <img src="https://i.ibb.co/g71X3Gj/logo-header1.png" width="100px">
+              </div>
+              <div class="column1">
+                <div style="text-align: center">
+                  Republic of the Philippines<br>
+                  Province of Laguna<br>
+                  <b>Municipality of Santa Cruz</b></br><br>
+                  <b>SANTA CRUZ TRAFFIC MANAGEMENT OFFICE</b>
+                </div>
+              </div>
+              <div class="column1">
+                <img src="https://i.ibb.co/dtwnvdF/logo-header2.png" width="100px">
+              </div>
+            </div>
+            <hr>`);
+          newWindow.document.write('<h3>'+title+'</h3><table style="width:100%; font-size: 12px; background-color: #fdfdfe; border: 1px solid #dee2e6; color: #212529;border-collapse: collapse;">');
+          newWindow.document.write(tableHtml);
+          newWindow.document.write('</table></body></html>');
+          
+          // Print and close the new window
+          newWindow.print();
+          newWindow.close();
+        });
+      }
+
+
+      function loadReportsPage() {
+        printPage('#reportsScreen', reportsDataTable, '#reportsTable', 'Report');
+        /*
+        $('#reportsScreen .buttonsPrint').on('click', function() {
           //reportsDataTable
           // Remove unwanted elements from the table HTML
           var tableHtml = $(reportsDataTable.table().container()).find('#reportsTable').html();
@@ -1384,6 +1504,7 @@
           newWindow.print();
           newWindow.close();
         });
+        */
         
         // Get Plate No Details
         const plateNoDetails = collection(db, 'plateNoDetails/');
@@ -1395,10 +1516,9 @@
 
           reportsDataTable.clear();
 
-          let totalAmount = 0;
 
           plateNoDetailsQuerySnapshot.forEach((pd) => {
-            console.log(pd.id, " => ", pd.data());
+            //console.log(pd.id, " => ", pd.data());
 
             var pdData = pd.data();
             var licenseConfString = 'No';
@@ -1410,27 +1530,23 @@
             pdData.violations.forEach((v, index) => {
               var vData = v.split(',');
               var type = vData[1];
-              var amount = vData[2];
-              transactionsString = transactionsString + '*' + type + '-' + amount + '\r\n<br>';
+              var amount = parseFloat(vData[2]);
+              transactionsString = transactionsString + '*' + type + '-' + amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '\r\n<br>';
             });
 
-            if (pdData.payment.paid) {
-              totalAmount = totalAmount + parseFloat(pdData.payment.amount);
-            }
             reportsDataTable.row.add([
               pdData.payment.date,
               pd.id,
               pdData.fname + ' ' + pdData.mname[0] + '. ' + pdData.lname,
               pdData.no,
               transactionsString,
-              pdData.payment.amount
+              parseFloat(pdData.payment.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})
             ]);
             
             transactionsString = '';
           });
 
           reportsDataTable.order([[ 0, "desc" ]]).draw();
-          $('#totalAmountReport').text('Total: ' + totalAmount.toFixed(2));
           $('#loadingMain').removeClass('d-flex');
           $('#loadingMain').addClass('d-none');
         });
